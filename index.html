@@ -1,0 +1,625 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Marketing Executive TA Bill & Monthly Diary Portal</title>
+  <style>
+    :root {
+      --primary: #8b0000;
+      --secondary: #1a365d;
+      --bg: #f8fafc;
+      --surface: #ffffff;
+      --border: #cbd5e1;
+      --text: #1e293b;
+    }
+    * { box-sizing: border-box; margin: 0; padding: 0; font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif; }
+    body { background-color: var(--bg); color: var(--text); padding: 15px; }
+    .container { max-width: 1050px; margin: auto; background: var(--surface); padding: 25px; border-radius: 8px; box-shadow: 0 4px 12px rgba(0,0,0,0.08); }
+    h1, h2, h3 { color: var(--primary); margin-bottom: 12px; }
+    
+    /* Navigation Tabs */
+    .tabs { display: flex; gap: 8px; border-bottom: 2px solid var(--border); margin-bottom: 20px; flex-wrap: wrap; }
+    .tab-btn { padding: 10px 18px; border: none; background: #e2e8f0; cursor: pointer; font-weight: 600; border-radius: 6px 6px 0 0; transition: 0.2s; }
+    .tab-btn.active { background: var(--primary); color: #fff; }
+    .tab-content { display: none; }
+    .tab-content.active { display: block; }
+
+    /* Forms & Inputs */
+    .grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 12px; margin-bottom: 15px; }
+    label { font-size: 12px; font-weight: bold; color: #475569; display: block; margin-bottom: 4px; }
+    input, select, textarea { width: 100%; padding: 8px; border: 1px solid var(--border); border-radius: 4px; font-size: 14px; }
+    button.btn-action { background: var(--secondary); color: white; border: none; padding: 10px 20px; border-radius: 4px; cursor: pointer; font-weight: bold; }
+    button.btn-action:hover { opacity: 0.9; }
+    
+    /* Table Styles */
+    table { width: 100%; border-collapse: collapse; margin-top: 15px; font-size: 12px; }
+    th, td { border: 1px solid #000; padding: 6px 8px; text-align: left; }
+    th { background: #f1f5f9; text-transform: uppercase; font-size: 11px; }
+    
+    /* Section specific */
+    .section-card { border: 1px solid var(--border); border-radius: 6px; padding: 15px; margin-bottom: 15px; background: #fafafa; }
+    
+    /* Print Setup */
+    @media print {
+      body { background: white; padding: 0; }
+      .container { max-width: 100%; box-shadow: none; padding: 0; }
+      .no-print, .tabs { display: none !important; }
+      .tab-content { display: none !important; }
+      .tab-content.print-active { display: block !important; }
+      table { page-break-inside: auto; }
+      tr { page-break-inside: avoid; page-break-after: auto; }
+    }
+  </style>
+</head>
+<body>
+
+<div class="container">
+  <div class="no-print">
+    <h1>ME Tour Diary & TA Bill Generator</h1>
+    <p style="font-size: 13px; color: #64748b; margin-bottom: 15px;">Division: Ottapalam | HQ: Ottapalam HO</p>
+    
+    <div class="tabs">
+      <button class="tab-btn active" onclick="switchTab('daily-entry')">📝 Daily Data Entry</button>
+      <button class="tab-btn" onclick="switchTab('settings')">⚙️ Month & Targets</button>
+      <button class="tab-btn" onclick="preparePrint('ta-bill')">🖨️ View & Print TA Bill</button>
+      <button class="tab-btn" onclick="preparePrint('me-diary')">🖨️ View & Print ME Diary</button>
+    </div>
+  </div>
+
+  <!-- TAB 1: DAILY ENTRY -->
+  <div id="daily-entry" class="tab-content active">
+    <h3>Add Daily Movement & Marketing Record</h3>
+    <form id="entryForm" onsubmit="saveEntry(event)">
+      <div class="grid">
+        <div>
+          <label>Date</label>
+          <input type="date" id="tripDate" required>
+        </div>
+        <div>
+          <label>Destination / Target Office</label>
+          <select id="destination" onchange="autoFillDestination()" required>
+            <option value="">-- Select Office --</option>
+          </select>
+        </div>
+        <div>
+          <label>Mode of Travel</label>
+          <select id="mode">
+            <option value="BIKE">BIKE</option>
+            <option value="BUS">BUS</option>
+            <option value="TAXI">TAXI</option>
+          </select>
+        </div>
+        <div>
+          <label>Distance (One Way KM)</label>
+          <input type="number" step="0.5" id="kms" required>
+        </div>
+        <div>
+          <label>Fare per Single Trip (₹)</label>
+          <input type="number" id="fare" value="0">
+        </div>
+      </div>
+
+      <div class="grid">
+        <div>
+          <label>HQ Departure Time</label>
+          <input type="text" id="depTime" value="09:00">
+        </div>
+        <div>
+          <label>Dest Arrival Time</label>
+          <input type="text" id="arrTime" value="10:00">
+        </div>
+        <div>
+          <label>Dest Departure Time</label>
+          <input type="text" id="retDepTime" value="14:00">
+        </div>
+        <div>
+          <label>HQ Arrival Time</label>
+          <input type="text" id="retArrTime" value="15:00">
+        </div>
+      </div>
+
+      <!-- Diary Fields -->
+      <div class="section-card">
+        <h4 style="margin-bottom: 8px;">ME Tour Diary Activities (Optional for HQ/Non-tour days)</h4>
+        <div class="grid">
+          <div>
+            <label>Customer / Business Name</label>
+            <input type="text" id="customerName" placeholder="e.g. Zenith Marketing">
+          </div>
+          <div>
+            <label>Customer Contact No</label>
+            <input type="text" id="customerPhone" placeholder="10-digit number">
+          </div>
+          <div>
+            <label>New Areas Introduced</label>
+            <input type="text" id="businessIntroduced" placeholder="e.g. SPCOD / PARCEL RETAIL">
+          </div>
+          <div>
+            <label>Result of Visit</label>
+            <input type="text" id="resultOfVisit" placeholder="e.g. 2 Contracts Created / Form Supplied">
+          </div>
+        </div>
+        <div class="grid">
+          <div style="grid-column: span 2;">
+            <label>Task Other Than Marketing (PMEGP / DO Meetings / Audits)</label>
+            <input type="text" id="otherTasks" placeholder="e.g. PMEGP Bank forms supplied at Canara, SBI">
+          </div>
+          <div>
+            <label>Other Task Remarks</label>
+            <input type="text" id="otherRemarks" placeholder="Completed">
+          </div>
+        </div>
+      </div>
+
+      <button type="submit" class="btn-action">💾 Save Entry</button>
+    </form>
+
+    <div style="margin-top: 25px;">
+      <h4>Logged Days this Month (<span id="entryCount">0</span> entries)</h4>
+      <div style="overflow-x:auto;">
+        <table id="logTable">
+          <thead>
+            <tr>
+              <th>Date</th>
+              <th>Destination</th>
+              <th>Mode</th>
+              <th>Round KMs</th>
+              <th>Total Fare</th>
+              <th>Client Met</th>
+              <th>Non-Mktg Tasks</th>
+              <th class="no-print">Action</th>
+            </tr>
+          </thead>
+          <tbody></tbody>
+        </table>
+      </div>
+    </div>
+  </div>
+
+  <!-- TAB 2: MONTH & TARGET CONFIG -->
+  <div id="settings" class="tab-content">
+    <h3>Monthly Profile & Targets</h3>
+    <div class="grid">
+      <div>
+        <label>Selected Month & Year</label>
+        <input type="month" id="billingMonth" value="2026-07" onchange="renderAll()">
+      </div>
+      <div>
+        <label>Marketing Executive Name</label>
+        <input type="text" id="meName" value="ROHIT MG KRISHNAN">
+      </div>
+      <div>
+        <label>Office / HQ</label>
+        <input type="text" id="meHQ" value="OTTAPALAM HO">
+      </div>
+      <div>
+        <label>Days on Leave / Training</label>
+        <input type="text" id="leaveDays" value="0">
+      </div>
+    </div>
+
+    <h4>Monthly Targets & Achievements (₹)</h4>
+    <div class="grid">
+      <div>
+        <label>Parcels Target</label>
+        <input type="number" id="t_parcels" value="1450000">
+      </div>
+      <div>
+        <label>Parcels Achievement</label>
+        <input type="number" id="a_parcels" value="3836606">
+      </div>
+      <div>
+        <label>Money Order (MO) Target</label>
+        <input type="number" id="t_mo" value="2060000">
+      </div>
+      <div>
+        <label>MO Achievement</label>
+        <input type="number" id="a_mo" value="1173847">
+      </div>
+      <div>
+        <label>CCS Target</label>
+        <input type="number" id="t_ccs" value="211000">
+      </div>
+      <div>
+        <label>CCS Achievement</label>
+        <input type="number" id="a_ccs" value="13800">
+      </div>
+      <div>
+        <label>IRGB Target</label>
+        <input type="number" id="t_irgb" value="210000">
+      </div>
+      <div>
+        <label>IRGB Achievement</label>
+        <input type="number" id="a_irgb" value="363661">
+      </div>
+    </div>
+    <button class="btn-action" onclick="saveSettings()">Save Target Updates</button>
+  </div>
+
+  <!-- TAB 3: PRINT VIEW - TA BILL -->
+  <div id="ta-bill" class="tab-content">
+    <div class="no-print" style="margin-bottom: 15px; display: flex; justify-content: space-between;">
+      <button class="btn-action" onclick="window.print()">🖨️ Print / Save as PDF</button>
+      <button onclick="switchTab('daily-entry')">Back to Entry</button>
+    </div>
+    
+    <div style="text-align: center; margin-bottom: 12px;">
+      <h3 style="text-decoration: underline; margin-bottom: 4px;">TA BILL OF ME OTTAPALAM DIVISION FOR THE MONTH OF <span id="taMonthLabel"></span></h3>
+      <p style="font-size: 13px;"><b>NAME:</b> <span id="taNameLabel"></span> &nbsp;&nbsp;|&nbsp;&nbsp; <b>HQ:</b> <span id="taHqLabel"></span> &nbsp;&nbsp;|&nbsp;&nbsp; <b>LEAVE:</b> <span id="taLeaveLabel"></span></p>
+    </div>
+
+    <table id="taPrintTable">
+      <thead>
+        <tr>
+          <th>Departure Date</th>
+          <th>Time</th>
+          <th>Place</th>
+          <th>Arrival Date</th>
+          <th>Time</th>
+          <th>Place</th>
+          <th>Mode</th>
+          <th>KMS</th>
+          <th>Fare (₹)</th>
+        </tr>
+      </thead>
+      <tbody></tbody>
+    </table>
+
+    <div style="margin-top: 15px; font-size: 13px; line-height: 1.6;">
+      <p><b>TOTAL DISTANCE TRAVELED BY BIKE:</b> <span id="totBikeKm">0</span> KM (<span id="totBikeWords"></span>)</p>
+      <p><b>TOTAL DISTANCE TRAVELED BY BUS:</b> <span id="totBusKm">0</span> KM (<span id="totBusWords"></span>)</p>
+      <p><b>TOTAL FARE (BUS):</b> ₹ <span id="totFare">0</span></p>
+    </div>
+
+    <div style="margin-top: 50px; display: flex; justify-content: space-between; font-weight: bold; font-size: 13px;">
+      <div>STATION: OTTAPALAM</div>
+      <div style="text-align: right;">
+        <span id="taSignature"></span><br>
+        ME OTTAPALAM
+      </div>
+    </div>
+  </div>
+
+  <!-- TAB 4: PRINT VIEW - ME DIARY -->
+  <div id="me-diary" class="tab-content">
+    <div class="no-print" style="margin-bottom: 15px; display: flex; justify-content: space-between;">
+      <button class="btn-action" onclick="window.print()">🖨️ Print / Save as PDF</button>
+      <button onclick="switchTab('daily-entry')">Back to Entry</button>
+    </div>
+
+    <div style="text-align: center; margin-bottom: 15px;">
+      <h3 style="text-decoration: underline;">DIARY FOR THE MONTH OF <span id="diaryMonthLabel"></span></h3>
+    </div>
+
+    <h4 style="margin-top: 10px;">A. Basic Details</h4>
+    <table>
+      <tr><td><b>Region</b></td><td>NORTHERN</td><td><b>Division</b></td><td>OTTAPALAM</td></tr>
+      <tr><td><b>Name of ME</b></td><td id="d_name"></td><td><b>Designation</b></td><td>ME</td></tr>
+      <tr><td><b>Office Attached</b></td><td id="d_hq"></td><td><b>Month</b></td><td id="d_month"></td></tr>
+      <tr><td><b>Total No. of Days on Tour/Visit</b></td><td id="d_tourDays"></td><td><b>No. of days on Leave</b></td><td id="d_leave"></td></tr>
+    </table>
+
+    <h4 style="margin-top: 15px;">B. Targets & Achievement (During the Month)</h4>
+    <table id="targetsTable">
+      <thead>
+        <tr>
+          <th>Service / Vertical</th>
+          <th>Target Assigned (₹)</th>
+          <th>Achievement (₹)</th>
+          <th>Percentage of Achievement</th>
+        </tr>
+      </thead>
+      <tbody></tbody>
+    </table>
+
+    <h4 style="margin-top: 15px;">C. Daily Activity Report</h4>
+    <table id="activityTable">
+      <thead>
+        <tr>
+          <th>Date</th>
+          <th>Duration</th>
+          <th>Name and Address of Customer</th>
+          <th>Contact No</th>
+          <th>New Areas of Business Introduced</th>
+          <th>Overall Result of Visit</th>
+        </tr>
+      </thead>
+      <tbody></tbody>
+    </table>
+
+    <h4 style="margin-top: 15px;">E. Report on Tasks other than Marketing</h4>
+    <table id="otherTasksTable">
+      <thead>
+        <tr>
+          <th>Sl.No</th>
+          <th>Date</th>
+          <th>Tasks other than Marketing</th>
+          <th>Place</th>
+          <th>Remarks</th>
+        </tr>
+      </thead>
+      <tbody></tbody>
+    </table>
+
+    <div style="margin-top: 40px; display: flex; justify-content: space-between; font-weight: bold; font-size: 13px;">
+      <div>DATE: ________________</div>
+      <div>SIGNATURE OF ME</div>
+      <div>SIGNATURE OF POSTMASTER</div>
+    </div>
+  </div>
+</div>
+
+<script>
+  // Master Location Database Extracted from past 6 months
+  const MASTER_OFFICES = [
+    { name: "CHERPULASSERY", mode: "BIKE", kms: 17, fare: 0, dep: "09:00", arr: "10:00", rDep: "14:20", rArr: "15:20" },
+    { name: "MANNARKKAD", mode: "BUS", kms: 43, fare: 48, dep: "09:00", arr: "11:00", rDep: "14:00", rArr: "16:00" },
+    { name: "ALANALLUR", mode: "BIKE", kms: 43, fare: 0, dep: "09:00", arr: "10:20", rDep: "17:00", rArr: "18:20" },
+    { name: "KALLADIKKODE", mode: "BUS", kms: 40, fare: 44, dep: "08:00", arr: "10:00", rDep: "13:00", rArr: "15:00" },
+    { name: "KARIMBA", mode: "BUS", kms: 38, fare: 42, dep: "08:30", arr: "10:15", rDep: "13:30", rArr: "15:15" },
+    { name: "AGALI", mode: "BUS", kms: 80, fare: 96, dep: "08:00", arr: "10:30", rDep: "13:00", rArr: "15:30" },
+    { name: "SHORNUR", mode: "BUS", kms: 15, fare: 20, dep: "09:00", arr: "09:45", rDep: "14:00", rArr: "14:45" },
+    { name: "PATTAMBI", mode: "BUS", kms: 25, fare: 33, dep: "08:00", arr: "09:30", rDep: "14:00", rArr: "15:30" },
+    { name: "CHALAVARA", mode: "BIKE", kms: 15, fare: 0, dep: "09:00", arr: "09:45", rDep: "14:00", rArr: "14:45" },
+    { name: "SREEKRISHNAPURAM", mode: "BIKE", kms: 20, fare: 0, dep: "09:00", arr: "10:00", rDep: "14:00", rArr: "15:00" },
+    { name: "ADAKKAPUTHUR", mode: "BIKE", kms: 18, fare: 0, dep: "09:00", arr: "10:00", rDep: "14:20", rArr: "15:20" },
+    { name: "KUTTIKKODE", mode: "BIKE", kms: 17, fare: 0, dep: "09:00", arr: "09:45", rDep: "15:00", rArr: "15:45" },
+    { name: "PULLISSERY", mode: "BIKE", kms: 35, fare: 0, dep: "09:00", arr: "10:30", rDep: "16:00", rArr: "17:30" },
+    { name: "TACHAMPARA", mode: "BIKE", kms: 40, fare: 0, dep: "09:00", arr: "11:00", rDep: "15:00", rArr: "17:00" },
+    { name: "KANJIRAPUZHA", mode: "BUS", kms: 47, fare: 50, dep: "08:00", arr: "10:30", rDep: "14:00", rArr: "16:30" },
+    { name: "POTTASSERY", mode: "BIKE", kms: 45, fare: 0, dep: "08:00", arr: "10:15", rDep: "14:30", rArr: "16:45" },
+    { name: "CALICUT", mode: "BUS", kms: 110, fare: 170, dep: "08:30", arr: "11:30", rDep: "17:30", rArr: "21:00" },
+    { name: "NELLAYA", mode: "BUS", kms: 22, fare: 28, dep: "09:00", arr: "10:20", rDep: "14:00", rArr: "15:00" },
+    { name: "NATTUKAL", mode: "BUS", kms: 43, fare: 48, dep: "09:00", arr: "11:00", rDep: "14:00", rArr: "16:00" }
+  ];
+
+  let entries = JSON.parse(localStorage.getItem('me_entries')) || [];
+
+  window.onload = function() {
+    const destSelect = document.getElementById('destination');
+    MASTER_OFFICES.forEach(o => {
+      let opt = document.createElement('option');
+      opt.value = o.name;
+      opt.text = `${o.name} (${o.kms} km - ${o.mode})`;
+      destSelect.add(opt);
+    });
+    renderAll();
+  };
+
+  function autoFillDestination() {
+    const val = document.getElementById('destination').value;
+    const dest = MASTER_OFFICES.find(o => o.name === val);
+    if(dest) {
+      document.getElementById('mode').value = dest.mode;
+      document.getElementById('kms').value = dest.kms;
+      document.getElementById('fare').value = dest.fare;
+      document.getElementById('depTime').value = dest.dep;
+      document.getElementById('arrTime').value = dest.arr;
+      document.getElementById('retDepTime').value = dest.rDep;
+      document.getElementById('retArrTime').value = dest.rArr;
+    }
+  }
+
+  function saveEntry(e) {
+    e.preventDefault();
+    const entry = {
+      id: Date.now(),
+      date: document.getElementById('tripDate').value,
+      place: document.getElementById('destination').value,
+      mode: document.getElementById('mode').value,
+      kms: parseFloat(document.getElementById('kms').value),
+      fare: parseFloat(document.getElementById('fare').value) || 0,
+      depTime: document.getElementById('depTime').value,
+      arrTime: document.getElementById('arrTime').value,
+      retDepTime: document.getElementById('retDepTime').value,
+      retArrTime: document.getElementById('retArrTime').value,
+      customerName: document.getElementById('customerName').value,
+      customerPhone: document.getElementById('customerPhone').value,
+      businessIntroduced: document.getElementById('businessIntroduced').value,
+      resultOfVisit: document.getElementById('resultOfVisit').value,
+      otherTasks: document.getElementById('otherTasks').value,
+      otherRemarks: document.getElementById('otherRemarks').value
+    };
+
+    entries.push(entry);
+    entries.sort((a,b) => new Date(a.date) - new Date(b.date));
+    localStorage.setItem('me_entries', JSON.stringify(entries));
+    document.getElementById('entryForm').reset();
+    renderAll();
+    alert('Entry saved successfully!');
+  }
+
+  function deleteEntry(id) {
+    if(confirm('Delete this entry?')) {
+      entries = entries.filter(e => e.id !== id);
+      localStorage.setItem('me_entries', JSON.stringify(entries));
+      renderAll();
+    }
+  }
+
+  function renderAll() {
+    const m = document.getElementById('billingMonth').value;
+    const currentMonthEntries = entries.filter(e => e.date.startsWith(m));
+    
+    // Render Log Table
+    document.getElementById('entryCount').innerText = currentMonthEntries.length;
+    const tbody = document.querySelector('#logTable tbody');
+    tbody.innerHTML = '';
+    currentMonthEntries.forEach(e => {
+      let tr = document.createElement('tr');
+      tr.innerHTML = `
+        <td>${e.date}</td>
+        <td>${e.place}</td>
+        <td>${e.mode}</td>
+        <td>${e.kms * 2}</td>
+        <td>₹ ${e.fare * 2}</td>
+        <td>${e.customerName || '-'}</td>
+        <td>${e.otherTasks || '-'}</td>
+        <td class="no-print"><button onclick="deleteEntry(${e.id})" style="color:red; cursor:pointer;">✖</button></td>
+      `;
+      tbody.appendChild(tr);
+    });
+
+    renderTABill(currentMonthEntries);
+    renderDiary(currentMonthEntries);
+  }
+
+  function renderTABill(filtered) {
+    const m = document.getElementById('billingMonth').value;
+    const [year, monthNum] = m.split('-');
+    const monthNames = ["JANUARY", "FEBRUARY", "MARCH", "APRIL", "MAY", "JUNE", "JULY", "AUGUST", "SEPTEMBER", "OCTOBER", "NOVEMBER", "DECEMBER"];
+    const monthStr = `${monthNames[parseInt(monthNum)-1]} ${year}`;
+
+    document.getElementById('taMonthLabel').innerText = monthStr;
+    document.getElementById('taNameLabel').innerText = document.getElementById('meName').value;
+    document.getElementById('taHqLabel').innerText = document.getElementById('meHQ').value;
+    document.getElementById('taLeaveLabel').innerText = document.getElementById('leaveDays').value;
+    document.getElementById('taSignature').innerText = document.getElementById('meName').value;
+
+    const tbody = document.querySelector('#taPrintTable tbody');
+    tbody.innerHTML = '';
+    let bikeTotal = 0;
+    let busTotal = 0;
+    let fareTotal = 0;
+
+    filtered.forEach(e => {
+      const dParts = e.date.split('-');
+      const formattedDate = `${dParts[2]}/${dParts[1]}/${dParts[0]}`;
+      const singleFare = e.fare > 0 ? e.fare : '-';
+
+      if(e.mode === 'BIKE') bikeTotal += (e.kms * 2);
+      if(e.mode === 'BUS') {
+        busTotal += (e.kms * 2);
+        fareTotal += (e.fare * 2);
+      }
+
+      // Outward row
+      tbody.innerHTML += `
+        <tr>
+          <td>${formattedDate}</td>
+          <td>${e.depTime.replace(':','')}</td>
+          <td>HQ</td>
+          <td>${formattedDate}</td>
+          <td>${e.arrTime.replace(':','')}</td>
+          <td>${e.place}</td>
+          <td>${e.mode}</td>
+          <td>${e.kms}</td>
+          <td>${singleFare}</td>
+        </tr>
+      `;
+      // Return row
+      tbody.innerHTML += `
+        <tr>
+          <td>${formattedDate}</td>
+          <td>${e.retDepTime.replace(':','')}</td>
+          <td>${e.place}</td>
+          <td>${formattedDate}</td>
+          <td>${e.retArrTime.replace(':','')}</td>
+          <td>HQ</td>
+          <td>${e.mode}</td>
+          <td>${e.kms}</td>
+          <td>${singleFare}</td>
+        </tr>
+      `;
+    });
+
+    document.getElementById('totBikeKm').innerText = bikeTotal;
+    document.getElementById('totBusKm').innerText = busTotal;
+    document.getElementById('totFare').innerText = fareTotal;
+    document.getElementById('totBikeWords').innerText = convertNumberToWords(bikeTotal) + " KM ONLY";
+    document.getElementById('totBusWords').innerText = convertNumberToWords(busTotal) + " KM ONLY";
+  }
+
+  function renderDiary(filtered) {
+    const m = document.getElementById('billingMonth').value;
+    const [year, monthNum] = m.split('-');
+    const monthNames = ["JANUARY", "FEBRUARY", "MARCH", "APRIL", "MAY", "JUNE", "JULY", "AUGUST", "SEPTEMBER", "OCTOBER", "NOVEMBER", "DECEMBER"];
+    const monthStr = `${monthNames[parseInt(monthNum)-1]} ${year}`;
+
+    document.getElementById('diaryMonthLabel').innerText = monthStr;
+    document.getElementById('d_name').innerText = document.getElementById('meName').value;
+    document.getElementById('d_hq').innerText = document.getElementById('meHQ').value;
+    document.getElementById('d_month').innerText = monthNames[parseInt(monthNum)-1];
+    document.getElementById('d_tourDays').innerText = filtered.length;
+    document.getElementById('d_leave').innerText = document.getElementById('leaveDays').value;
+
+    // Targets Table
+    const tgBody = document.querySelector('#targetsTable tbody');
+    const verticals = [
+      { name: "Parcels", t: parseFloat(document.getElementById('t_parcels').value), a: parseFloat(document.getElementById('a_parcels').value) },
+      { name: "MO", t: parseFloat(document.getElementById('t_mo').value), a: parseFloat(document.getElementById('a_mo').value) },
+      { name: "CCS", t: parseFloat(document.getElementById('t_ccs').value), a: parseFloat(document.getElementById('a_ccs').value) },
+      { name: "IRGB", t: parseFloat(document.getElementById('t_irgb').value), a: parseFloat(document.getElementById('a_irgb').value) }
+    ];
+    let totT = 0, totA = 0;
+    tgBody.innerHTML = '';
+    verticals.forEach(v => {
+      totT += v.t; totA += v.a;
+      let pct = ((v.a / v.t) * 100).toFixed(1);
+      tgBody.innerHTML += `<tr><td>${v.name}</td><td>${v.t}</td><td>${v.a}</td><td>${pct}%</td></tr>`;
+    });
+    let totPct = ((totA / totT) * 100).toFixed(1);
+    tgBody.innerHTML += `<tr><td><b>Total</b></td><td><b>${totT}</b></td><td><b>${totA}</b></td><td><b>${totPct}%</b></td></tr>`;
+
+    // Activity Table
+    const actBody = document.querySelector('#activityTable tbody');
+    actBody.innerHTML = '';
+    filtered.filter(e => e.customerName).forEach(e => {
+      actBody.innerHTML += `
+        <tr>
+          <td>${e.date}</td>
+          <td>4HR</td>
+          <td>${e.customerName}<br><small>${e.place}</small></td>
+          <td>${e.customerPhone || '-'}</td>
+          <td>${e.businessIntroduced || '-'}</td>
+          <td>${e.resultOfVisit || '-'}</td>
+        </tr>
+      `;
+    });
+
+    // Other tasks Table
+    const oBody = document.querySelector('#otherTasksTable tbody');
+    oBody.innerHTML = '';
+    let idx = 1;
+    filtered.filter(e => e.otherTasks).forEach(e => {
+      oBody.innerHTML += `
+        <tr>
+          <td>${idx++}</td>
+          <td>${e.date}</td>
+          <td>${e.otherTasks}</td>
+          <td>${e.place}</td>
+          <td>${e.otherRemarks || 'Completed'}</td>
+        </tr>
+      `;
+    });
+  }
+
+  function switchTab(id) {
+    document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
+    document.querySelectorAll('.tab-content').forEach(c => c.classList.remove('active', 'print-active'));
+    document.getElementById(id).classList.add('active');
+  }
+
+  function preparePrint(id) {
+    document.querySelectorAll('.tab-content').forEach(c => c.classList.remove('active', 'print-active'));
+    document.getElementById(id).classList.add('active', 'print-active');
+  }
+
+  function convertNumberToWords(num) {
+    const a = ['','One ','Two ','Three ','Four ', 'Five ','Six ','Seven ','Eight ','Nine ','Ten ','Eleven ','Twelve ','Thirteen ','Fourteen ','Fifteen ','Sixteen ','Seventeen ','Eighteen ','Nineteen '];
+    const b = ['', '', 'Twenty','Thirty','Forty','Fifty', 'Sixty','Seventy','Eighty','Ninety'];
+    if ((num = num.toString()).length > 9) return 'overflow';
+    let n = ('000000000' + num).substr(-9).match(/^(\d{2})(\d{2})(\d{2})(\d{1})(\d{2})$/);
+    if (!n) return ''; 
+    let str = '';
+    str += (n[1] != 0) ? (a[Number(n[1])] || b[n[1][0]] + ' ' + a[n[1][1]]) + 'Crore ' : '';
+    str += (n[2] != 0) ? (a[Number(n[2])] || b[n[2][0]] + ' ' + a[n[2][1]]) + 'Lakh ' : '';
+    str += (n[3] != 0) ? (a[Number(n[3])] || b[n[3][0]] + ' ' + a[n[3][1]]) + 'Thousand ' : '';
+    str += (n[4] != 0) ? (a[Number(n[4])] || b[n[4][0]] + ' ' + a[n[4][1]]) + 'Hundred ' : '';
+    str += (n[5] != 0) ? ((str != '') ? 'and ' : '') + (a[Number(n[5])] || b[n[5][0]] + ' ' + a[n[5][1]]) : '';
+    return str.toUpperCase();
+  }
+</script>
+</body>
+</html>
