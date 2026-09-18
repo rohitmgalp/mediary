@@ -1,625 +1,1213 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Marketing Executive TA Bill & Monthly Diary Portal</title>
-  <style>
-    :root {
-      --primary: #8b0000;
-      --secondary: #1a365d;
-      --bg: #f8fafc;
-      --surface: #ffffff;
-      --border: #cbd5e1;
-      --text: #1e293b;
-    }
-    * { box-sizing: border-box; margin: 0; padding: 0; font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif; }
-    body { background-color: var(--bg); color: var(--text); padding: 15px; }
-    .container { max-width: 1050px; margin: auto; background: var(--surface); padding: 25px; border-radius: 8px; box-shadow: 0 4px 12px rgba(0,0,0,0.08); }
-    h1, h2, h3 { color: var(--primary); margin-bottom: 12px; }
-    
-    /* Navigation Tabs */
-    .tabs { display: flex; gap: 8px; border-bottom: 2px solid var(--border); margin-bottom: 20px; flex-wrap: wrap; }
-    .tab-btn { padding: 10px 18px; border: none; background: #e2e8f0; cursor: pointer; font-weight: 600; border-radius: 6px 6px 0 0; transition: 0.2s; }
-    .tab-btn.active { background: var(--primary); color: #fff; }
-    .tab-content { display: none; }
-    .tab-content.active { display: block; }
-
-    /* Forms & Inputs */
-    .grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 12px; margin-bottom: 15px; }
-    label { font-size: 12px; font-weight: bold; color: #475569; display: block; margin-bottom: 4px; }
-    input, select, textarea { width: 100%; padding: 8px; border: 1px solid var(--border); border-radius: 4px; font-size: 14px; }
-    button.btn-action { background: var(--secondary); color: white; border: none; padding: 10px 20px; border-radius: 4px; cursor: pointer; font-weight: bold; }
-    button.btn-action:hover { opacity: 0.9; }
-    
-    /* Table Styles */
-    table { width: 100%; border-collapse: collapse; margin-top: 15px; font-size: 12px; }
-    th, td { border: 1px solid #000; padding: 6px 8px; text-align: left; }
-    th { background: #f1f5f9; text-transform: uppercase; font-size: 11px; }
-    
-    /* Section specific */
-    .section-card { border: 1px solid var(--border); border-radius: 6px; padding: 15px; margin-bottom: 15px; background: #fafafa; }
-    
-    /* Print Setup */
-    @media print {
-      body { background: white; padding: 0; }
-      .container { max-width: 100%; box-shadow: none; padding: 0; }
-      .no-print, .tabs { display: none !important; }
-      .tab-content { display: none !important; }
-      .tab-content.print-active { display: block !important; }
-      table { page-break-inside: auto; }
-      tr { page-break-inside: avoid; page-break-after: auto; }
-    }
-  </style>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>ME Diary &amp; TA Bill</title>
+<script src="https://cdn.jsdelivr.net/npm/docx@8.5.0/build/index.umd.min.js"></script>
+<style>
+:root{
+  --bg:#f6f5f2; --panel:#ffffff; --ink:#1f2320; --muted:#6b6f6a; --line:#e2ddd3;
+  --accent:#2f6f4f; --accent-ink:#ffffff; --accent-soft:#e7f2ec;
+  --danger:#b3443b; --warn:#a5731f; --shadow:0 1px 3px rgba(0,0,0,.08);
+  --radius:10px; --sans: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+}
+@media (prefers-color-scheme: dark){
+  :root:not([data-theme="light"]){
+    --bg:#15171a; --panel:#1e2124; --ink:#e9e9e7; --muted:#9b9f9a; --line:#2c3034;
+    --accent:#4fa377; --accent-ink:#0c1210; --accent-soft:#1c2b23; --shadow:0 1px 4px rgba(0,0,0,.4);
+  }
+}
+:root[data-theme="dark"]{
+  --bg:#15171a; --panel:#1e2124; --ink:#e9e9e7; --muted:#9b9f9a; --line:#2c3034;
+  --accent:#4fa377; --accent-ink:#0c1210; --accent-soft:#1c2b23; --shadow:0 1px 4px rgba(0,0,0,.4);
+}
+*{box-sizing:border-box;}
+body{margin:0;background:var(--bg);color:var(--ink);font-family:var(--sans);-webkit-font-smoothing:antialiased;}
+.wrap{max-width:920px;margin:0 auto;padding:14px 14px 80px;}
+h1{font-size:1.15rem;margin:6px 0 2px;}
+.sub{color:var(--muted);font-size:.82rem;margin-bottom:14px;}
+.tabs{display:flex;gap:6px;overflow-x:auto;padding-bottom:6px;margin-bottom:14px;border-bottom:1px solid var(--line);}
+.tab{flex:0 0 auto;padding:8px 13px;border-radius:8px 8px 0 0;background:transparent;border:none;color:var(--muted);font-size:.86rem;font-weight:600;cursor:pointer;white-space:nowrap;}
+.tab.active{color:var(--accent);background:var(--accent-soft);}
+.panel{display:none;}
+.panel.active{display:block;}
+.card{background:var(--panel);border:1px solid var(--line);border-radius:var(--radius);padding:14px;margin-bottom:14px;box-shadow:var(--shadow);}
+.card h2{font-size:.95rem;margin:0 0 10px;}
+.card h3{font-size:.8rem;margin:14px 0 8px;color:var(--muted);text-transform:uppercase;letter-spacing:.04em;}
+.row{display:flex;gap:8px;flex-wrap:wrap;}
+.field{display:flex;flex-direction:column;gap:4px;flex:1 1 130px;margin-bottom:10px;}
+.field label{font-size:.74rem;color:var(--muted);font-weight:600;}
+input,select,textarea{
+  font-family:inherit;font-size:.9rem;padding:8px 9px;border-radius:7px;border:1px solid var(--line);
+  background:var(--bg);color:var(--ink);width:100%;
+}
+textarea{resize:vertical;min-height:44px;}
+input:focus,select:focus,textarea:focus{outline:2px solid var(--accent);outline-offset:-1px;}
+button{
+  font-family:inherit;font-size:.86rem;font-weight:600;padding:9px 14px;border-radius:8px;border:1px solid var(--line);
+  background:var(--panel);color:var(--ink);cursor:pointer;
+}
+button.primary{background:var(--accent);color:var(--accent-ink);border-color:var(--accent);}
+button.danger{color:var(--danger);border-color:var(--danger);background:transparent;}
+button.ghost{background:transparent;}
+.btnrow{display:flex;gap:8px;flex-wrap:wrap;margin-top:6px;}
+table{width:100%;border-collapse:collapse;font-size:.8rem;}
+th,td{border:1px solid var(--line);padding:6px 7px;text-align:left;vertical-align:top;}
+th{background:var(--accent-soft);font-size:.7rem;text-transform:uppercase;letter-spacing:.03em;color:var(--muted);}
+.tablewrap{overflow-x:auto;margin-top:6px;}
+table input,table select{padding:4px 5px;font-size:.78rem;min-width:56px;}
+.chip{display:inline-flex;align-items:center;gap:5px;background:var(--accent-soft);color:var(--accent);border-radius:20px;padding:3px 10px;font-size:.72rem;font-weight:600;margin:2px 4px 2px 0;cursor:pointer;border:1px solid transparent;}
+.chip.off{background:transparent;color:var(--muted);border-color:var(--line);}
+.chiprow{display:flex;flex-wrap:wrap;margin:4px 0 2px;}
+.hint{font-size:.74rem;color:var(--muted);margin-top:2px;}
+.warn{font-size:.74rem;color:var(--warn);margin-top:4px;}
+.grid4{display:grid;grid-template-columns:repeat(auto-fit,minmax(120px,1fr));gap:8px;margin-bottom:6px;}
+.stat{background:var(--bg);border:1px solid var(--line);border-radius:8px;padding:8px 10px;}
+.stat .n{font-size:1.1rem;font-weight:700;}
+.stat .l{font-size:.66rem;color:var(--muted);text-transform:uppercase;letter-spacing:.03em;}
+.empty{color:var(--muted);font-size:.85rem;padding:14px 4px;text-align:center;}
+.iconbtn{border:none;background:transparent;color:var(--danger);cursor:pointer;font-size:.9rem;padding:2px 6px;}
+.dateNav{display:flex;align-items:center;gap:8px;margin-bottom:10px;}
+.dateNav input[type=date]{flex:1;}
+.itinerary{background:var(--accent-soft);border:1px dashed var(--accent);border-radius:8px;padding:10px;margin-top:10px;font-size:.8rem;}
+.toast{position:fixed;bottom:18px;left:50%;transform:translateX(-50%);background:var(--ink);color:var(--bg);padding:9px 16px;border-radius:20px;font-size:.82rem;box-shadow:var(--shadow);opacity:0;pointer-events:none;transition:opacity .2s;z-index:50;}
+.toast.show{opacity:1;}
+.holidayList{display:flex;flex-wrap:wrap;gap:6px;margin-top:6px;}
+.smallnote{font-size:.72rem;color:var(--muted);}
+::placeholder{color:var(--muted);opacity:.7;}
+</style>
 </head>
 <body>
+<div class="wrap">
+  <h1>📔 ME Diary &amp; TA Bill</h1>
+  <div class="sub">Just log your visits and non-marketing tasks — travel, timings, distance, fare and totals are all worked out for you.</div>
 
-<div class="container">
-  <div class="no-print">
-    <h1>ME Tour Diary & TA Bill Generator</h1>
-    <p style="font-size: 13px; color: #64748b; margin-bottom: 15px;">Division: Ottapalam | HQ: Ottapalam HO</p>
-    
-    <div class="tabs">
-      <button class="tab-btn active" onclick="switchTab('daily-entry')">📝 Daily Data Entry</button>
-      <button class="tab-btn" onclick="switchTab('settings')">⚙️ Month & Targets</button>
-      <button class="tab-btn" onclick="preparePrint('ta-bill')">🖨️ View & Print TA Bill</button>
-      <button class="tab-btn" onclick="preparePrint('me-diary')">🖨️ View & Print ME Diary</button>
+  <div class="tabs">
+    <button class="tab active" data-tab="entry">Day Log</button>
+    <button class="tab" data-tab="month">Month Setup</button>
+    <button class="tab" data-tab="generate">Generate</button>
+    <button class="tab" data-tab="settings">Settings</button>
+    <button class="tab" data-tab="sync">Sync</button>
+  </div>
+
+  <!-- ENTRY TAB -->
+  <div class="panel active" id="tab-entry">
+    <div class="card">
+      <div class="dateNav">
+        <button id="dayPrev" class="ghost">◀</button>
+        <input type="date" id="entryDate">
+        <button id="dayNext" class="ghost">▶</button>
+        <button id="dayToday" class="ghost">Today</button>
+      </div>
+      <div class="smallnote" id="entryDayInfo"></div>
+    </div>
+
+    <div class="card">
+      <h2>1️⃣ Business visits for this day</h2>
+      <div class="row">
+        <div class="field" style="flex:2 1 160px"><label>Place</label><input list="placeList" id="visPlace" placeholder="e.g. MANNARKKAD"></div>
+        <div class="field" style="flex:2 1 160px"><label>Customer name</label><input type="text" id="visCustomer"></div>
+      </div>
+      <div class="row">
+        <div class="field" style="flex:1 1 130px"><label>Contact no. (optional)</label><input type="text" id="visContact"></div>
+        <div class="field" style="flex:1 1 100px"><label>Hours spent</label><input type="number" step="0.5" id="visHours"></div>
+        <div class="field" style="flex:2 1 160px"><label>Result of visit</label><input type="text" id="visResult" value="1 CONTRACT CREATED"></div>
+      </div>
+      <div class="field">
+        <label>New areas of business introduced (tap to toggle)</label>
+        <div class="chiprow" id="visAreasChips"></div>
+        <input type="text" id="visAreaCustom" placeholder="type a new tag and press Enter">
+      </div>
+      <div class="btnrow"><button class="primary" id="addVisitBtn">+ Log visit</button><button class="ghost" id="visitCancelEdit" style="display:none" onclick="cancelEditVisit()">Cancel edit</button></div>
+      <div id="visitList" class="tablewrap"></div>
+      <datalist id="placeList"></datalist>
+    </div>
+
+    <div class="card">
+      <h2>2️⃣ Report on tasks other than marketing</h2>
+      <div class="hint">Office duty, meetings, training, admin work — anything that isn't a customer visit.</div>
+      <div class="row">
+        <div class="field" style="flex:2 1 200px"><label>Task description</label><input type="text" id="taskDesc" placeholder="e.g. Office duty, RO meeting, training"></div>
+        <div class="field" style="flex:1 1 100px"><label>Hours spent</label><input type="number" step="0.5" id="taskHours"></div>
+      </div>
+      <div class="row">
+        <div class="field" style="flex:2 1 200px">
+          <label>Did this involve travel out of HQ? (leave blank if done at HQ)</label>
+          <input list="placeList" id="taskPlace" placeholder="place visited, or leave blank">
+        </div>
+      </div>
+      <div class="btnrow"><button class="primary" id="addTaskBtn">+ Log task</button><button class="ghost" id="taskCancelEdit" style="display:none" onclick="cancelEditTask()">Cancel edit</button></div>
+      <div id="taskList" class="tablewrap"></div>
+    </div>
+
+    <div class="card" id="itineraryCard" style="display:none">
+      <h2>🚌 Auto-generated itinerary for this day</h2>
+      <div class="hint">Worked out from your visits/tasks above: HQ → first place → second place → ... → HQ. Distances come from your database where known, or are estimated from map coordinates when a specific pair (e.g. Cherpulassery → Mannarkkad) isn't in your history yet. Mode is decided automatically — bike for the month's first stretch of travel, then bus once your monthly bike-km limit is used up. Edit KM/Fare here to correct it — it's remembered for next time.</div>
+      <div id="itineraryBox" class="itinerary"></div>
     </div>
   </div>
 
-  <!-- TAB 1: DAILY ENTRY -->
-  <div id="daily-entry" class="tab-content active">
-    <h3>Add Daily Movement & Marketing Record</h3>
-    <form id="entryForm" onsubmit="saveEntry(event)">
-      <div class="grid">
-        <div>
-          <label>Date</label>
-          <input type="date" id="tripDate" required>
-        </div>
-        <div>
-          <label>Destination / Target Office</label>
-          <select id="destination" onchange="autoFillDestination()" required>
-            <option value="">-- Select Office --</option>
-          </select>
-        </div>
-        <div>
-          <label>Mode of Travel</label>
-          <select id="mode">
-            <option value="BIKE">BIKE</option>
-            <option value="BUS">BUS</option>
-            <option value="TAXI">TAXI</option>
-          </select>
-        </div>
-        <div>
-          <label>Distance (One Way KM)</label>
-          <input type="number" step="0.5" id="kms" required>
-        </div>
-        <div>
-          <label>Fare per Single Trip (₹)</label>
-          <input type="number" id="fare" value="0">
-        </div>
+  <!-- MONTH SETUP TAB -->
+  <div class="panel" id="tab-month">
+    <div class="card">
+      <div class="field" style="max-width:220px"><label>Month</label><input type="month" id="monthPicker"></div>
+      <div class="grid4" id="monthStats"></div>
+    </div>
+    <div class="card">
+      <h2>Leave &amp; Holidays</h2>
+      <div class="row">
+        <div class="field"><label>Leave text (shown on diary)</label><input type="text" id="leaveText" placeholder='e.g. 1 DAY (TWO HALF DAY CL)'></div>
+        <div class="field" style="flex:1 1 100px"><label>Leave days (number, used in calc)</label><input type="number" step="0.5" id="leaveDays" value="0"></div>
       </div>
-
-      <div class="grid">
-        <div>
-          <label>HQ Departure Time</label>
-          <input type="text" id="depTime" value="09:00">
-        </div>
-        <div>
-          <label>Dest Arrival Time</label>
-          <input type="text" id="arrTime" value="10:00">
-        </div>
-        <div>
-          <label>Dest Departure Time</label>
-          <input type="text" id="retDepTime" value="14:00">
-        </div>
-        <div>
-          <label>HQ Arrival Time</label>
-          <input type="text" id="retArrTime" value="15:00">
-        </div>
+      <h3>Mark holidays this month (besides Sundays, which are automatic)</h3>
+      <div class="row">
+        <div class="field" style="flex:2 1 160px"><label>Add holiday date</label><input type="date" id="holidayAdd"></div>
+        <div class="field" style="flex:2 1 160px"><label>Label (optional)</label><input type="text" id="holidayLabel" placeholder="e.g. Independence Day"></div>
       </div>
-
-      <!-- Diary Fields -->
-      <div class="section-card">
-        <h4 style="margin-bottom: 8px;">ME Tour Diary Activities (Optional for HQ/Non-tour days)</h4>
-        <div class="grid">
-          <div>
-            <label>Customer / Business Name</label>
-            <input type="text" id="customerName" placeholder="e.g. Zenith Marketing">
-          </div>
-          <div>
-            <label>Customer Contact No</label>
-            <input type="text" id="customerPhone" placeholder="10-digit number">
-          </div>
-          <div>
-            <label>New Areas Introduced</label>
-            <input type="text" id="businessIntroduced" placeholder="e.g. SPCOD / PARCEL RETAIL">
-          </div>
-          <div>
-            <label>Result of Visit</label>
-            <input type="text" id="resultOfVisit" placeholder="e.g. 2 Contracts Created / Form Supplied">
-          </div>
-        </div>
-        <div class="grid">
-          <div style="grid-column: span 2;">
-            <label>Task Other Than Marketing (PMEGP / DO Meetings / Audits)</label>
-            <input type="text" id="otherTasks" placeholder="e.g. PMEGP Bank forms supplied at Canara, SBI">
-          </div>
-          <div>
-            <label>Other Task Remarks</label>
-            <input type="text" id="otherRemarks" placeholder="Completed">
-          </div>
-        </div>
-      </div>
-
-      <button type="submit" class="btn-action">💾 Save Entry</button>
-    </form>
-
-    <div style="margin-top: 25px;">
-      <h4>Logged Days this Month (<span id="entryCount">0</span> entries)</h4>
-      <div style="overflow-x:auto;">
-        <table id="logTable">
-          <thead>
-            <tr>
-              <th>Date</th>
-              <th>Destination</th>
-              <th>Mode</th>
-              <th>Round KMs</th>
-              <th>Total Fare</th>
-              <th>Client Met</th>
-              <th>Non-Mktg Tasks</th>
-              <th class="no-print">Action</th>
-            </tr>
-          </thead>
+      <div class="btnrow"><button id="addHolidayBtn">+ Add holiday</button></div>
+      <div class="holidayList" id="holidayList"></div>
+    </div>
+    <div class="card">
+      <h2>Targets &amp; Achievement</h2>
+      <div class="tablewrap">
+        <table id="targetsTable">
+          <thead><tr><th>Vertical</th><th>Target</th><th>Achievement</th><th>%</th></tr></thead>
           <tbody></tbody>
         </table>
       </div>
     </div>
   </div>
 
-  <!-- TAB 2: MONTH & TARGET CONFIG -->
-  <div id="settings" class="tab-content">
-    <h3>Monthly Profile & Targets</h3>
-    <div class="grid">
-      <div>
-        <label>Selected Month & Year</label>
-        <input type="month" id="billingMonth" value="2026-07" onchange="renderAll()">
+  <!-- GENERATE TAB -->
+  <div class="panel" id="tab-generate">
+    <div class="card">
+      <div class="field" style="max-width:220px"><label>Month to generate</label><input type="month" id="genMonthPicker"></div>
+      <div class="grid4" id="genStats"></div>
+      <div id="genWarnings" class="warn"></div>
+      <div class="btnrow">
+        <button class="primary" id="genDiaryBtn">⬇ Download Diary (.docx)</button>
+        <button class="primary" id="genTaBtn">⬇ Download TA Bill (.docx)</button>
       </div>
-      <div>
-        <label>Marketing Executive Name</label>
-        <input type="text" id="meName" value="ROHIT MG KRISHNAN">
-      </div>
-      <div>
-        <label>Office / HQ</label>
-        <input type="text" id="meHQ" value="OTTAPALAM HO">
-      </div>
-      <div>
-        <label>Days on Leave / Training</label>
-        <input type="text" id="leaveDays" value="0">
-      </div>
-    </div>
-
-    <h4>Monthly Targets & Achievements (₹)</h4>
-    <div class="grid">
-      <div>
-        <label>Parcels Target</label>
-        <input type="number" id="t_parcels" value="1450000">
-      </div>
-      <div>
-        <label>Parcels Achievement</label>
-        <input type="number" id="a_parcels" value="3836606">
-      </div>
-      <div>
-        <label>Money Order (MO) Target</label>
-        <input type="number" id="t_mo" value="2060000">
-      </div>
-      <div>
-        <label>MO Achievement</label>
-        <input type="number" id="a_mo" value="1173847">
-      </div>
-      <div>
-        <label>CCS Target</label>
-        <input type="number" id="t_ccs" value="211000">
-      </div>
-      <div>
-        <label>CCS Achievement</label>
-        <input type="number" id="a_ccs" value="13800">
-      </div>
-      <div>
-        <label>IRGB Target</label>
-        <input type="number" id="t_irgb" value="210000">
-      </div>
-      <div>
-        <label>IRGB Achievement</label>
-        <input type="number" id="a_irgb" value="363661">
-      </div>
-    </div>
-    <button class="btn-action" onclick="saveSettings()">Save Target Updates</button>
-  </div>
-
-  <!-- TAB 3: PRINT VIEW - TA BILL -->
-  <div id="ta-bill" class="tab-content">
-    <div class="no-print" style="margin-bottom: 15px; display: flex; justify-content: space-between;">
-      <button class="btn-action" onclick="window.print()">🖨️ Print / Save as PDF</button>
-      <button onclick="switchTab('daily-entry')">Back to Entry</button>
-    </div>
-    
-    <div style="text-align: center; margin-bottom: 12px;">
-      <h3 style="text-decoration: underline; margin-bottom: 4px;">TA BILL OF ME OTTAPALAM DIVISION FOR THE MONTH OF <span id="taMonthLabel"></span></h3>
-      <p style="font-size: 13px;"><b>NAME:</b> <span id="taNameLabel"></span> &nbsp;&nbsp;|&nbsp;&nbsp; <b>HQ:</b> <span id="taHqLabel"></span> &nbsp;&nbsp;|&nbsp;&nbsp; <b>LEAVE:</b> <span id="taLeaveLabel"></span></p>
-    </div>
-
-    <table id="taPrintTable">
-      <thead>
-        <tr>
-          <th>Departure Date</th>
-          <th>Time</th>
-          <th>Place</th>
-          <th>Arrival Date</th>
-          <th>Time</th>
-          <th>Place</th>
-          <th>Mode</th>
-          <th>KMS</th>
-          <th>Fare (₹)</th>
-        </tr>
-      </thead>
-      <tbody></tbody>
-    </table>
-
-    <div style="margin-top: 15px; font-size: 13px; line-height: 1.6;">
-      <p><b>TOTAL DISTANCE TRAVELED BY BIKE:</b> <span id="totBikeKm">0</span> KM (<span id="totBikeWords"></span>)</p>
-      <p><b>TOTAL DISTANCE TRAVELED BY BUS:</b> <span id="totBusKm">0</span> KM (<span id="totBusWords"></span>)</p>
-      <p><b>TOTAL FARE (BUS):</b> ₹ <span id="totFare">0</span></p>
-    </div>
-
-    <div style="margin-top: 50px; display: flex; justify-content: space-between; font-weight: bold; font-size: 13px;">
-      <div>STATION: OTTAPALAM</div>
-      <div style="text-align: right;">
-        <span id="taSignature"></span><br>
-        ME OTTAPALAM
-      </div>
+      <div class="hint">Downloads open in Microsoft Word / LibreOffice with the same layout as your originals — tables, bold headings, totals.</div>
     </div>
   </div>
 
-  <!-- TAB 4: PRINT VIEW - ME DIARY -->
-  <div id="me-diary" class="tab-content">
-    <div class="no-print" style="margin-bottom: 15px; display: flex; justify-content: space-between;">
-      <button class="btn-action" onclick="window.print()">🖨️ Print / Save as PDF</button>
-      <button onclick="switchTab('daily-entry')">Back to Entry</button>
+  <!-- SETTINGS TAB -->
+  <div class="panel" id="tab-settings">
+    <div class="card">
+      <h2>Profile (used on every Diary / TA Bill)</h2>
+      <div class="row">
+        <div class="field"><label>Name</label><input type="text" id="pName"></div>
+        <div class="field"><label>Designation</label><input type="text" id="pDesignation" value="ME"></div>
+      </div>
+      <div class="row">
+        <div class="field"><label>Region</label><input type="text" id="pRegion"></div>
+        <div class="field"><label>Division</label><input type="text" id="pDivision"></div>
+      </div>
+      <div class="field"><label>HQ / Office attached</label><input type="text" id="pHq"></div>
+      <div class="btnrow"><button class="primary" id="saveProfileBtn">Save profile</button></div>
     </div>
-
-    <div style="text-align: center; margin-bottom: 15px;">
-      <h3 style="text-decoration: underline;">DIARY FOR THE MONTH OF <span id="diaryMonthLabel"></span></h3>
+    <div class="card">
+      <h2>Assumptions used for auto-calculation</h2>
+      <div class="row">
+        <div class="field" style="flex:1 1 100px"><label>Start time from HQ</label><input type="time" id="aStart"></div>
+        <div class="field" style="flex:1 1 100px"><label>Avg. travel speed (km/h)</label><input type="number" id="aSpeed"></div>
+        <div class="field" style="flex:1 1 100px"><label>Default hours per visit/task</label><input type="number" step="0.5" id="aHours"></div>
+        <div class="field" style="flex:1 1 120px"><label>Bike km limit per month</label><input type="number" id="aBikeLimit"></div>
+      </div>
+      <div class="hint">Every leg is BIKE (no fare claimed) until the month's cumulative distance passes this limit — after that, remaining travel is automatically logged as BUS with fare.</div>
+      <div class="btnrow"><button class="primary" id="saveAssumptionsBtn">Save</button></div>
     </div>
+    <div class="card">
+      <h2>Places &amp; Routes (distance/fare database from HQ)</h2>
+      <div class="hint">Seeded from your past TA bills, with approximate map coordinates so the app can also work out distances <i>between two non-HQ places</i> (e.g. Cherpulassery → Mannarkkad) automatically. Fare here is only used once that place's travel falls into the BUS phase of the month (see Assumptions above). Edit KM or lat anytime, or add a new place below.</div>
+      <div class="tablewrap"><table id="routesTable"><thead><tr><th>Place</th><th>KM from HQ</th><th>Bus fare ₹</th><th>Lat</th><th>Lon</th><th></th></tr></thead><tbody></tbody></table></div>
+      <div class="row" style="margin-top:10px">
+        <div class="field" style="flex:2 1 140px"><input type="text" id="newPlaceName" placeholder="New place name"></div>
+        <div class="field" style="flex:1 1 80px"><input type="number" id="newPlaceKm" placeholder="KM"></div>
+        <div class="field" style="flex:1 1 80px"><input type="number" id="newPlaceFare" placeholder="Bus fare ₹"></div>
+      </div>
+      <div class="row">
+        <div class="field" style="flex:1 1 110px"><input type="number" step="0.000001" id="newPlaceLat" placeholder="Latitude (optional)"></div>
+        <div class="field" style="flex:1 1 110px"><input type="number" step="0.000001" id="newPlaceLon" placeholder="Longitude (optional)"></div>
+      </div>
+      <div class="hint">Adding latitude/longitude (long-press a spot in Google Maps to copy them) lets the app auto-calculate this place's distance to <i>any other place</i> you log later — not just to HQ.</div>
+      <div class="btnrow"><button id="addPlaceBtn">+ Add place</button></div>
+    </div>
+    <div class="card">
+      <h2>Data</h2>
+      <div class="btnrow">
+        <button id="exportBtn">Export backup (.json)</button>
+        <button id="importBtn">Import backup (.json)</button>
+        <button class="danger" id="wipeBtn">Erase all data</button>
+      </div>
+      <input type="file" id="importFile" accept="application/json" style="display:none">
+      <div class="hint">Backups also work for moving data between devices manually. For automatic multi-device sync, see the <b>Sync</b> tab.</div>
+    </div>
+  </div>
 
-    <h4 style="margin-top: 10px;">A. Basic Details</h4>
-    <table>
-      <tr><td><b>Region</b></td><td>NORTHERN</td><td><b>Division</b></td><td>OTTAPALAM</td></tr>
-      <tr><td><b>Name of ME</b></td><td id="d_name"></td><td><b>Designation</b></td><td>ME</td></tr>
-      <tr><td><b>Office Attached</b></td><td id="d_hq"></td><td><b>Month</b></td><td id="d_month"></td></tr>
-      <tr><td><b>Total No. of Days on Tour/Visit</b></td><td id="d_tourDays"></td><td><b>No. of days on Leave</b></td><td id="d_leave"></td></tr>
-    </table>
-
-    <h4 style="margin-top: 15px;">B. Targets & Achievement (During the Month)</h4>
-    <table id="targetsTable">
-      <thead>
-        <tr>
-          <th>Service / Vertical</th>
-          <th>Target Assigned (₹)</th>
-          <th>Achievement (₹)</th>
-          <th>Percentage of Achievement</th>
-        </tr>
-      </thead>
-      <tbody></tbody>
-    </table>
-
-    <h4 style="margin-top: 15px;">C. Daily Activity Report</h4>
-    <table id="activityTable">
-      <thead>
-        <tr>
-          <th>Date</th>
-          <th>Duration</th>
-          <th>Name and Address of Customer</th>
-          <th>Contact No</th>
-          <th>New Areas of Business Introduced</th>
-          <th>Overall Result of Visit</th>
-        </tr>
-      </thead>
-      <tbody></tbody>
-    </table>
-
-    <h4 style="margin-top: 15px;">E. Report on Tasks other than Marketing</h4>
-    <table id="otherTasksTable">
-      <thead>
-        <tr>
-          <th>Sl.No</th>
-          <th>Date</th>
-          <th>Tasks other than Marketing</th>
-          <th>Place</th>
-          <th>Remarks</th>
-        </tr>
-      </thead>
-      <tbody></tbody>
-    </table>
-
-    <div style="margin-top: 40px; display: flex; justify-content: space-between; font-weight: bold; font-size: 13px;">
-      <div>DATE: ________________</div>
-      <div>SIGNATURE OF ME</div>
-      <div>SIGNATURE OF POSTMASTER</div>
+  <!-- SYNC TAB -->
+  <div class="panel" id="tab-sync">
+    <div class="card">
+      <h2>☁️ Multi-device cloud sync</h2>
+      <div class="hint">Connects this app to a free cloud database (Firebase) so the <i>same</i> data shows up on your phone and your computer. This only works once the app is hosted on your own Netlify/GitHub Pages link — it's switched off automatically inside this claude.ai preview, since that sandbox blocks outside network calls.</div>
+      <div id="syncEnvWarning" class="warn" style="display:none">⚠ Cloud sync can't run inside the claude.ai preview. Deploy this file to Netlify or GitHub Pages first, then open it from that URL to use this tab.</div>
+    </div>
+    <div class="card">
+      <h2>1. One-time Firebase setup (free, ~5 minutes)</h2>
+      <div class="hint">Do this once. It gives you a free cloud database you own — Google's free tier is generous enough for this app forever.</div>
+      <ol style="font-size:.86rem; line-height:1.7; padding-left:20px">
+        <li>Go to <b>console.firebase.google.com</b> → Add project → give it any name → skip Google Analytics → Create.</li>
+        <li>In the left menu: <b>Build → Firestore Database → Create database</b> → choose any location → Start in <b>test mode</b>.</li>
+        <li>In the left menu: <b>Project settings (gear icon) → General</b> → scroll to "Your apps" → click the <b>&lt;/&gt; (web)</b> icon → register an app (any nickname) → skip hosting.</li>
+        <li>Copy the <code>apiKey</code> and <code>projectId</code> values shown in the config box into the two fields below.</li>
+      </ol>
+    </div>
+    <div class="card">
+      <h2>2. Connect this device</h2>
+      <div class="row">
+        <div class="field"><label>Firebase Project ID</label><input type="text" id="syncProjectId" placeholder="e.g. my-diary-12345"></div>
+        <div class="field"><label>Firebase Web API Key</label><input type="text" id="syncApiKey" placeholder="AIza..."></div>
+      </div>
+      <div class="field">
+        <label>Sync code (acts like a shared password between your devices)</label>
+        <div class="row">
+          <input type="text" id="syncCode" placeholder="Generate one on your first device" style="flex:2 1 200px">
+          <button id="syncGenCode" style="flex:0 0 auto">Generate new code</button>
+        </div>
+        <div class="hint">On your <b>first</b> device, click "Generate new code" and save it. On <b>every other</b> device, type that same code in here instead of generating a new one — that's what links them together.</div>
+      </div>
+      <div class="btnrow">
+        <button class="primary" id="syncEnableBtn">Connect &amp; enable sync</button>
+        <button class="danger" id="syncDisableBtn" style="display:none">Disconnect sync on this device</button>
+      </div>
+      <div class="hint" id="syncStatus" style="margin-top:8px"></div>
+    </div>
+    <div class="card">
+      <h2>3. Keeping devices in sync</h2>
+      <div class="hint">Once connected, every change you make here uploads automatically a couple of seconds later, and the app checks for updates from your other devices when you open or return to this tab.</div>
+      <div class="btnrow"><button id="syncNowBtn">🔄 Sync now</button></div>
+      <div class="warn" style="margin-top:8px">This is convenience-level privacy, not bank-grade security: anyone who has your exact sync code, project ID and API key could read or edit this data (which includes customer names/phone numbers). Don't share the sync code, and don't reuse a password you use elsewhere as the code.</div>
     </div>
   </div>
 </div>
+<div class="toast" id="toast"></div>
 
 <script>
-  // Master Location Database Extracted from past 6 months
-  const MASTER_OFFICES = [
-    { name: "CHERPULASSERY", mode: "BIKE", kms: 17, fare: 0, dep: "09:00", arr: "10:00", rDep: "14:20", rArr: "15:20" },
-    { name: "MANNARKKAD", mode: "BUS", kms: 43, fare: 48, dep: "09:00", arr: "11:00", rDep: "14:00", rArr: "16:00" },
-    { name: "ALANALLUR", mode: "BIKE", kms: 43, fare: 0, dep: "09:00", arr: "10:20", rDep: "17:00", rArr: "18:20" },
-    { name: "KALLADIKKODE", mode: "BUS", kms: 40, fare: 44, dep: "08:00", arr: "10:00", rDep: "13:00", rArr: "15:00" },
-    { name: "KARIMBA", mode: "BUS", kms: 38, fare: 42, dep: "08:30", arr: "10:15", rDep: "13:30", rArr: "15:15" },
-    { name: "AGALI", mode: "BUS", kms: 80, fare: 96, dep: "08:00", arr: "10:30", rDep: "13:00", rArr: "15:30" },
-    { name: "SHORNUR", mode: "BUS", kms: 15, fare: 20, dep: "09:00", arr: "09:45", rDep: "14:00", rArr: "14:45" },
-    { name: "PATTAMBI", mode: "BUS", kms: 25, fare: 33, dep: "08:00", arr: "09:30", rDep: "14:00", rArr: "15:30" },
-    { name: "CHALAVARA", mode: "BIKE", kms: 15, fare: 0, dep: "09:00", arr: "09:45", rDep: "14:00", rArr: "14:45" },
-    { name: "SREEKRISHNAPURAM", mode: "BIKE", kms: 20, fare: 0, dep: "09:00", arr: "10:00", rDep: "14:00", rArr: "15:00" },
-    { name: "ADAKKAPUTHUR", mode: "BIKE", kms: 18, fare: 0, dep: "09:00", arr: "10:00", rDep: "14:20", rArr: "15:20" },
-    { name: "KUTTIKKODE", mode: "BIKE", kms: 17, fare: 0, dep: "09:00", arr: "09:45", rDep: "15:00", rArr: "15:45" },
-    { name: "PULLISSERY", mode: "BIKE", kms: 35, fare: 0, dep: "09:00", arr: "10:30", rDep: "16:00", rArr: "17:30" },
-    { name: "TACHAMPARA", mode: "BIKE", kms: 40, fare: 0, dep: "09:00", arr: "11:00", rDep: "15:00", rArr: "17:00" },
-    { name: "KANJIRAPUZHA", mode: "BUS", kms: 47, fare: 50, dep: "08:00", arr: "10:30", rDep: "14:00", rArr: "16:30" },
-    { name: "POTTASSERY", mode: "BIKE", kms: 45, fare: 0, dep: "08:00", arr: "10:15", rDep: "14:30", rArr: "16:45" },
-    { name: "CALICUT", mode: "BUS", kms: 110, fare: 170, dep: "08:30", arr: "11:30", rDep: "17:30", rArr: "21:00" },
-    { name: "NELLAYA", mode: "BUS", kms: 22, fare: 28, dep: "09:00", arr: "10:20", rDep: "14:00", rArr: "15:00" },
-    { name: "NATTUKAL", mode: "BUS", kms: 43, fare: 48, dep: "09:00", arr: "11:00", rDep: "14:00", rArr: "16:00" }
+/* ============ SEED DATA (from your uploaded 2025-2026 TA bills) ============ */
+const SEED_ROUTES = [
+["KARIMBA",38,0,"BIKE"],["PANAMANNA",10,0,"BIKE"],["POTTASSERY",42,0,"BIKE"],
+["MANNARKKAD",43,48,"BUS"],["ALANALLUR",45,50,"BUS"],["TACHAMPARA",40,44,"BUS"],
+["KARAKURISSI",10,15,"BUS"],["SREEKRISHNAPURAM",20,25,"BUS"],["CHERPULASSERY",17,25,"BUS"],
+["KALLADIKKODE",40,44,"BUS"],["NELLAYA",22,30,"BUS"],["AMBALAPPARA",15,20,"BUS"],
+["KALLUVAZHI",10,15,"BUS"],["VELLINEZHI",25,35,"BUS"],["KARIMBUZHA",25,30,"BUS"],
+["THRIKKATIRI",15,20,"BUS"],["ATTASSERY",25,30,"BUS"],["KANJIRAPUZHA",40,44,"BUS"],
+["ADAKKAPUTHUR",18,0,"BIKE"],["SHORNUR",17,23,"BUS"],["APPERUR",15,0,"BIKE"],
+["GS SADANAM",15,0,"BIKE"],["CHALAVARA",17,23,"BUS"],["NATTUKAL",43,48,"BUS"],
+["AGALI",80,90,"BUS"],["KUTTIKKODE",17,0,"BIKE"],["KONGAD",30,38,"BUS"],
+["PATTAMBI",25,33,"BUS"],["CALICUT NADAKKAVU",110,170,"BUS"],["KULAPULLI",14,0,"BIKE"],
+["CHALISSERY",40,48,"BUS"],["KARINKALLATHANI",36,0,"BIKE"],["MELEPATTAMBI",23,30,"BUS"],
+["KUMARANALLUR",45,0,"BIKE"],["KUDALLUR",42,50,"BUS"],["PALLIPURAM",32,40,"BUS"],
+["CHANGALEERI",43,48,"BUS"],["PULLISSERY",35,0,"BIKE"],["ARYAMBAV",35,43,"BUS"],
+["BHEEMANAD",45,50,"BUS"]
+];
+// Real, verified town coordinates (from published sources)
+const VERIFIED_COORDS = {
+  'HQ': {lat:10.7700, lon:76.3800},
+  'CHERPULASSERY': {lat:10.8793, lon:76.3148},
+  'MANNARKKAD': {lat:10.9932, lon:76.4610},
+  'SHORNUR': {lat:10.7700, lon:76.2800}
+};
+// Approximate bearing (deg from north) from HQ for places without a verified geocode.
+// Combined with each place's known road-km (halved by the road/straight-line factor below)
+// this gives a workable estimated position — not a live map lookup, but close enough to be
+// corrected in one edit rather than guessed from scratch.
+const SEED_BEARINGS = {
+  'ALANALLUR':78,'KARIMBA':75,'KARIMBUZHA':70,'TACHAMPARA':85,'KARAKURISSI':85,
+  'AGALI':22,'KANJIRAPUZHA':15,'NATTUKAL':28,'BHEEMANAD':10,
+  'THRIKKATIRI':60,'CHANGALEERI':50,'SREEKRISHNAPURAM':45,'ATTASSERY':35,
+  'APPERUR':325,'GS SADANAM':335,'KUTTIKKODE':345,'ADAKKAPUTHUR':315,
+  'VELLINEZHI':355,'AMBALAPPARA':0,'KALLUVAZHI':3,'NELLAYA':340,
+  'PATTAMBI':300,'MELEPATTAMBI':295,'KULAPULLI':260,'KUDALLUR':250,
+  'PALLIPURAM':255,'CHALISSERY':230,'KONGAD':160,'KALLADIKKODE':165,
+  'ARYAMBAV':170,'CHALAVARA':200,'KARINKALLATHANI':190,'KUMARANALLUR':195,
+  'CALICUT NADAKKAVU':350,'PULLISSERY':210,'PANAMANNA':30,'POTTASSERY':80
+};
+const ROAD_FACTOR = 1.4; // typical road-distance vs straight-line ratio on these routes
+function toRad(d){ return d*Math.PI/180; }
+function haversineKm(lat1,lon1,lat2,lon2){
+  const R=6371;
+  const dLat=toRad(lat2-lat1), dLon=toRad(lon2-lon1);
+  const a=Math.sin(dLat/2)**2 + Math.cos(toRad(lat1))*Math.cos(toRad(lat2))*Math.sin(dLon/2)**2;
+  return R*2*Math.atan2(Math.sqrt(a), Math.sqrt(1-a));
+}
+function destPoint(lat1,lon1,bearingDeg,distKm){
+  const R=6371, br=toRad(bearingDeg), phi1=toRad(lat1), lam1=toRad(lon1), delta=distKm/R;
+  const phi2=Math.asin(Math.sin(phi1)*Math.cos(delta)+Math.cos(phi1)*Math.sin(delta)*Math.cos(br));
+  const lam2=lam1+Math.atan2(Math.sin(br)*Math.sin(delta)*Math.cos(phi1), Math.cos(delta)-Math.sin(phi1)*Math.sin(phi2));
+  return {lat: phi2*180/Math.PI, lon: lam2*180/Math.PI};
+}
+function buildSeedCoords(){
+  const coords = {};
+  Object.keys(VERIFIED_COORDS).forEach(k=> coords[k]=VERIFIED_COORDS[k]);
+  SEED_ROUTES.forEach(([name,km])=>{
+    if(coords[name]) return;
+    const bearing = SEED_BEARINGS[name];
+    if(bearing==null) return;
+    coords[name] = destPoint(VERIFIED_COORDS.HQ.lat, VERIFIED_COORDS.HQ.lon, bearing, km/ROAD_FACTOR);
+  });
+  return coords;
+}
+
+/* ---------------- storage ---------------- */
+const STORE_KEY = 'meDiaryTaData_v2';
+const TARGET_VERTICALS = ['Parcels','MO','CCS','IRGB'];
+const DEFAULT_AREA_TAGS = ['BUSINESS PARCEL','BPCOD','SPCOD','MO','IRGB'];
+
+function defaultData(){
+  const routes = {};
+  const places = ['HQ'];
+  SEED_ROUTES.forEach(([name,km,fare,mode])=>{
+    routes['HQ|'+name] = {km, fare, mode};
+    places.push(name);
+  });
+  return {
+    profile:{name:'',designation:'ME',region:'',division:'',hq:''},
+    assumptions:{startTime:'09:00', speedKmh:20, visitHours:4, bikeLimitKm:300},
+    places, areaTags: DEFAULT_AREA_TAGS.slice(),
+    routes, coords: buildSeedCoords(), seqCounter:0,
+    sync:{enabled:false, projectId:'', apiKey:'', code:'', lastSyncedAt:null},
+    sync: {enabled:false, projectId:'', apiKey:'', code:'', lastSyncedAt:null},
+    months:{}
+  };
+}
+function loadData(){
+  try{
+    const raw = localStorage.getItem(STORE_KEY);
+    if(!raw) return defaultData();
+    const d = JSON.parse(raw);
+    const def = defaultData();
+    return Object.assign(def, d, {
+      profile: Object.assign(def.profile, d.profile||{}),
+      assumptions: Object.assign(def.assumptions, d.assumptions||{}),
+      places: d.places && d.places.length ? d.places : def.places,
+      areaTags: d.areaTags && d.areaTags.length ? d.areaTags : def.areaTags,
+      routes: Object.keys(d.routes||{}).length ? d.routes : def.routes,
+      coords: Object.assign({}, def.coords, d.coords||{}),
+      sync: Object.assign({}, def.sync, d.sync||{}),
+      sync: Object.assign(def.sync, d.sync||{}),
+      months: d.months || {}
+    });
+  }catch(e){ console.error('load failed', e); return defaultData(); }
+}
+function saveData(){
+  try{ localStorage.setItem(STORE_KEY, JSON.stringify(DATA)); }
+  catch(e){ console.error('save failed', e); toast('Save failed — storage may be full'); }
+  scheduleCloudPush();
+}
+let DATA = loadData();
+
+function ensureMonth(key){
+  if(!DATA.months[key]){
+    const targets = {};
+    TARGET_VERTICALS.forEach(v=> targets[v] = {target:0, achievement:0});
+    DATA.months[key] = {leaveText:'', leaveDays:0, holidays:[], targets, visits:[], tasks:[]};
+  }
+  TARGET_VERTICALS.forEach(v=>{ if(!DATA.months[key].targets[v]) DATA.months[key].targets[v] = {target:0,achievement:0}; });
+  if(!DATA.months[key].tasks) DATA.months[key].tasks = [];
+  return DATA.months[key];
+}
+function addPlace(name){
+  if(!name) return;
+  const up = name.trim().toUpperCase();
+  if(!up || up==='HQ') return;
+  if(!DATA.places.some(p=>p.toUpperCase()===up)) DATA.places.push(up);
+}
+function routeKeyOf(from,to){ return (from||'').trim().toUpperCase()+'|'+(to||'').trim().toUpperCase(); }
+function estimateKmByCoords(from,to){
+  const c1 = DATA.coords[from], c2 = DATA.coords[to];
+  if(!c1 || !c2) return null;
+  const straight = haversineKm(c1.lat, c1.lon, c2.lat, c2.lon);
+  return Math.round(straight*ROAD_FACTOR*10)/10;
+}
+function estimateBusFare(km){
+  if(!km || km<=0) return 0;
+  return Math.max(10, Math.round(km*1.05+7));
+}
+// km/fare lookup for a leg, in priority order:
+// 1) an exact remembered route (from this pair specifically, either direction)
+// 2) a map-coordinate estimate between the two places (covers e.g. Cherpulassery -> Mannarkkad)
+// 3) unknown — flagged for a one-time manual fix
+function lookupRoute(from,to){
+  from=(from||'').toUpperCase(); to=(to||'').toUpperCase();
+  if(from===to) return {km:0, fare:0, unknown:false, source:'same'};
+  let r = DATA.routes[from+'|'+to] || DATA.routes[to+'|'+from];
+  if(r) return {km:r.km, fare:r.fare||0, unknown:false, source:'stored'};
+  const estKm = estimateKmByCoords(from,to);
+  if(estKm!=null) return {km:estKm, fare:0, unknown:false, source:'map'};
+  return {km:0, fare:0, unknown:true, source:'none'};
+}
+function setRoute(from,to,km,fare){
+  from=(from||'').toUpperCase(); to=(to||'').toUpperCase();
+  const prev = DATA.routes[from+'|'+to] || DATA.routes[to+'|'+from];
+  const key = (DATA.routes[to+'|'+from] && !DATA.routes[from+'|'+to]) ? (to+'|'+from) : (from+'|'+to);
+  DATA.routes[key] = {km:parseFloat(km)||0, fare:parseFloat(fare)||0, mode: prev && prev.mode ? prev.mode : 'BIKE'};
+}
+
+/* ---------------- utils ---------------- */
+function toast(msg){
+  const t = document.getElementById('toast');
+  t.textContent = msg; t.classList.add('show');
+  clearTimeout(toast._t); toast._t = setTimeout(()=>t.classList.remove('show'), 1800);
+}
+function pad(n){ return String(n).padStart(2,'0'); }
+function isoDate(d){ return d.getFullYear()+'-'+pad(d.getMonth()+1)+'-'+pad(d.getDate()); }
+function monthKeyOf(iso){ return iso.slice(0,7); }
+function fmtDMY(iso){ const [y,m,d]=iso.split('-'); return d+'/'+m+'/'+y; }
+function fmtTimeHM(t){ if(!t) return ''; return t.replace(':',''); }
+function monthName(key){ const [y,m]=key.split('-'); return new Date(y,m-1,1).toLocaleString('en-US',{month:'long'})+' '+y; }
+function daysInMonth(key){ const [y,m]=key.split('-').map(Number); return new Date(y,m,0).getDate(); }
+function sundaysInMonth(key){ const [y,m]=key.split('-').map(Number); const n=new Date(y,m,0).getDate(); let c=0; for(let d=1;d<=n;d++){ if(new Date(y,m-1,d).getDay()===0) c++; } return c; }
+function uid(){ return Math.random().toString(36).slice(2,9); }
+function timeToMin(t){ const [h,m]=t.split(':').map(Number); return h*60+m; }
+function minToTime(m){ m = ((m%1440)+1440)%1440; return pad(Math.floor(m/60))+':'+pad(m%60); }
+function estimateTravelMinutes(km){
+  if(!km || km<=0) return 15;
+  const raw = km/DATA.assumptions.speedKmh*60;
+  return Math.max(15, Math.round(raw/5)*5);
+}
+
+/* ---------------- itinerary engine ---------------- */
+// builds the day's stops (visits + travel-tasks) in entry order, then chains HQ -> stop1 -> stop2 -> ... -> HQ
+function dayStops(date){
+  const m = ensureMonth(monthKeyOf(date));
+  const items = [];
+  m.visits.filter(v=>v.date===date).forEach(v=> items.push({type:'visit', place:v.place, hours: v.hours||DATA.assumptions.visitHours, seq:v.seq, label:v.customer}));
+  m.tasks.filter(t=>t.date===date && t.place).forEach(t=> items.push({type:'task', place:t.place, hours: t.hours||DATA.assumptions.visitHours, seq:t.seq, label:t.description}));
+  items.sort((a,b)=>a.seq-b.seq);
+  return items;
+}
+// Raw legs for one day: from/to/times/km/unknown resolved, but mode+fare NOT yet decided
+// (that depends on how much km has already accumulated so far this month).
+function rawDayLegs(date){
+  const items = dayStops(date);
+  if(!items.length) return [];
+  let curTime = DATA.assumptions.startTime;
+  let curPlace = 'HQ';
+  const legs = [];
+  items.forEach(it=>{
+    const r = lookupRoute(curPlace, it.place);
+    const travelMin = estimateTravelMinutes(r.km);
+    const dep = curTime, arr = minToTime(timeToMin(curTime)+travelMin);
+    legs.push({date, depTime:dep, from:curPlace, arrTime:arr, to:it.place, km:r.km, knownFare:r.fare, unknown:r.unknown, source:r.source});
+    curTime = minToTime(timeToMin(arr) + Math.round((it.hours||DATA.assumptions.visitHours)*60));
+    curPlace = it.place;
+  });
+  if(curPlace!=='HQ'){
+    const r = lookupRoute(curPlace,'HQ');
+    const travelMin = estimateTravelMinutes(r.km);
+    const dep = curTime, arr = minToTime(timeToMin(curTime)+travelMin);
+    legs.push({date, depTime:dep, from:curPlace, arrTime:arr, to:'HQ', km:r.km, knownFare:r.fare, unknown:r.unknown, source:r.source});
+  }
+  return legs;
+}
+// First `bikeLimitKm` of travel each month is BIKE (no fare); everything after is BUS (with fare).
+function applyBikeBusPolicy(legsChronological, startCum){
+  let cum = startCum||0;
+  const limit = DATA.assumptions.bikeLimitKm || 300;
+  legsChronological.forEach(l=>{
+    if(cum < limit){ l.mode='BIKE'; l.fare=0; }
+    else { l.mode='BUS'; l.fare = l.knownFare>0 ? l.knownFare : estimateBusFare(l.km); }
+    cum += (l.km||0);
+  });
+  return cum;
+}
+function monthLegsResolved(mKey){
+  const n = daysInMonth(mKey);
+  let all = [];
+  for(let d=1; d<=n; d++) all = all.concat(rawDayLegs(mKey+'-'+pad(d)));
+  applyBikeBusPolicy(all, 0);
+  return all;
+}
+// For the Day Log preview: cumulative km from earlier days this month decides today's starting point.
+function dayLegsWithPolicy(date){
+  const mKey = monthKeyOf(date);
+  const n = daysInMonth(mKey);
+  let cum = 0;
+  for(let d=1; d<=n; d++){
+    const iso = mKey+'-'+pad(d);
+    if(iso===date) break;
+    rawDayLegs(iso).forEach(l=> cum += (l.km||0));
+  }
+  const todays = rawDayLegs(date);
+  applyBikeBusPolicy(todays, cum);
+  return todays;
+}
+
+/* ---------------- cloud sync (Firestore REST) ---------------- */
+function firestoreDocUrl(){
+  return 'https://firestore.googleapis.com/v1/projects/'+encodeURIComponent(DATA.sync.projectId)+
+    '/databases/(default)/documents/syncData/'+encodeURIComponent(DATA.sync.code)+'?key='+encodeURIComponent(DATA.sync.apiKey);
+}
+function updateSyncStatus(text){
+  const el = document.getElementById('syncStatus'); if(el) el.textContent = text;
+}
+let pushTimer = null;
+function scheduleCloudPush(){
+  if(!DATA.sync || !DATA.sync.enabled) return;
+  clearTimeout(pushTimer);
+  pushTimer = setTimeout(pushToCloud, 2000);
+}
+async function pushToCloud(){
+  if(!DATA.sync || !DATA.sync.enabled || !DATA.sync.projectId || !DATA.sync.apiKey || !DATA.sync.code) return;
+  const payload = Object.assign({}, DATA); delete payload.sync;
+  const body = {fields: {json:{stringValue: JSON.stringify(payload)}, updatedAt:{timestampValue: new Date().toISOString()}}};
+  try{
+    const res = await fetch(firestoreDocUrl(), {method:'PATCH', headers:{'Content-Type':'application/json'}, body: JSON.stringify(body)});
+    if(!res.ok) throw new Error('HTTP '+res.status);
+    DATA.sync.lastSyncedAt = new Date().toISOString();
+    localStorage.setItem(STORE_KEY, JSON.stringify(DATA));
+    updateSyncStatus('Synced just now — '+new Date().toLocaleTimeString());
+  }catch(e){
+    console.error('cloud push failed', e);
+    updateSyncStatus('⚠ Could not sync: '+(e && e.message ? e.message : 'network error')+' — this needs a hosted (non-preview) URL');
+  }
+}
+async function pullFromCloud(silent){
+  if(!DATA.sync || !DATA.sync.enabled || !DATA.sync.projectId || !DATA.sync.apiKey || !DATA.sync.code) return;
+  try{
+    const res = await fetch(firestoreDocUrl(), {method:'GET'});
+    if(res.status===404){ if(!silent) toast('No cloud data yet — saving here will create it'); return; }
+    if(!res.ok) throw new Error('HTTP '+res.status);
+    const doc = await res.json();
+    const jsonStr = doc.fields && doc.fields.json && doc.fields.json.stringValue;
+    if(!jsonStr) return;
+    const remoteUpdated = doc.fields.updatedAt ? doc.fields.updatedAt.timestampValue : null;
+    if(DATA.sync.lastSyncedAt && remoteUpdated && new Date(remoteUpdated) <= new Date(DATA.sync.lastSyncedAt)) return;
+    const remote = JSON.parse(jsonStr);
+    const keepSync = DATA.sync;
+    DATA = Object.assign(defaultData(), remote, {sync: keepSync});
+    DATA.sync.lastSyncedAt = remoteUpdated || new Date().toISOString();
+    localStorage.setItem(STORE_KEY, JSON.stringify(DATA));
+    renderEntryTab();
+    if(document.getElementById('tab-settings').classList.contains('active')) renderSettingsTab();
+    if(document.getElementById('tab-month').classList.contains('active')) renderMonthTab();
+    if(!silent) toast('Pulled latest from cloud');
+    updateSyncStatus('Synced (pulled latest) — '+new Date().toLocaleTimeString());
+  }catch(e){
+    console.error('cloud pull failed', e);
+    if(!silent) updateSyncStatus('⚠ Could not reach cloud: '+(e && e.message ? e.message : 'network error'));
+  }
+}
+function looksLikeClaudePreview(){
+  return /claude\.(ai|site|com)/i.test(location.hostname) || location.protocol==='blob:' || location.hostname==='';
+}
+function renderSyncTab(){
+  document.getElementById('syncEnvWarning').style.display = looksLikeClaudePreview() ? 'block' : 'none';
+  document.getElementById('syncProjectId').value = DATA.sync.projectId||'';
+  document.getElementById('syncApiKey').value = DATA.sync.apiKey||'';
+  document.getElementById('syncCode').value = DATA.sync.code||'';
+  document.getElementById('syncEnableBtn').textContent = DATA.sync.enabled ? 'Reconnect / update settings' : 'Connect & enable sync';
+  document.getElementById('syncDisableBtn').style.display = DATA.sync.enabled ? 'inline-block' : 'none';
+  updateSyncStatus(DATA.sync.enabled
+    ? 'Connected. Last synced: '+(DATA.sync.lastSyncedAt ? new Date(DATA.sync.lastSyncedAt).toLocaleString() : 'never yet')
+    : 'Not connected on this device.');
+}
+document.getElementById('syncGenCode').addEventListener('click', ()=>{
+  const code = (window.crypto && crypto.randomUUID) ? crypto.randomUUID() : (Date.now().toString(36)+Math.random().toString(36).slice(2,10));
+  document.getElementById('syncCode').value = code;
+  toast('Code generated — copy it before connecting your other devices');
+});
+document.getElementById('syncEnableBtn').addEventListener('click', async ()=>{
+  const projectId = document.getElementById('syncProjectId').value.trim();
+  const apiKey = document.getElementById('syncApiKey').value.trim();
+  const code = document.getElementById('syncCode').value.trim();
+  if(!projectId || !apiKey || !code){ toast('Fill in project ID, API key, and sync code'); return; }
+  DATA.sync = Object.assign(DATA.sync||{}, {projectId, apiKey, code, enabled:true});
+  localStorage.setItem(STORE_KEY, JSON.stringify(DATA));
+  updateSyncStatus('Connecting…');
+  await pullFromCloud(true);
+  await pushToCloud();
+  renderSyncTab();
+  toast('Sync enabled on this device');
+});
+document.getElementById('syncDisableBtn').addEventListener('click', ()=>{
+  DATA.sync.enabled = false;
+  localStorage.setItem(STORE_KEY, JSON.stringify(DATA));
+  renderSyncTab();
+  toast('Sync disabled on this device (cloud data is untouched)');
+});
+document.getElementById('syncNowBtn').addEventListener('click', async ()=>{
+  if(!DATA.sync || !DATA.sync.enabled){ toast('Connect sync first'); return; }
+  toast('Syncing…');
+  await pullFromCloud(false);
+  await pushToCloud();
+});
+window.addEventListener('focus', ()=>{ if(DATA.sync && DATA.sync.enabled) pullFromCloud(true); });
+
+/* ---------------- tabs ---------------- */
+document.querySelectorAll('.tab').forEach(btn=>{
+  btn.addEventListener('click', ()=>{
+    document.querySelectorAll('.tab').forEach(b=>b.classList.remove('active'));
+    document.querySelectorAll('.panel').forEach(p=>p.classList.remove('active'));
+    btn.classList.add('active');
+    document.getElementById('tab-'+btn.dataset.tab).classList.add('active');
+    if(btn.dataset.tab==='month') renderMonthTab();
+    if(btn.dataset.tab==='generate') renderGenerateTab();
+    if(btn.dataset.tab==='settings') renderSettingsTab();
+    if(btn.dataset.tab==='sync'){ renderSyncTab(); pullFromCloud(true); }
+  });
+});
+
+/* ---------------- Day Log tab ---------------- */
+const entryDateEl = document.getElementById('entryDate');
+entryDateEl.value = isoDate(new Date());
+document.getElementById('visHours').value = '';
+document.getElementById('taskHours').value = '';
+
+function renderPlaceList(){
+  document.getElementById('placeList').innerHTML = DATA.places.map(p=>`<option value="${p}">`).join('');
+}
+
+function renderEntryTab(){
+  const iso = entryDateEl.value; if(!iso) return;
+  const mKey = monthKeyOf(iso); const m = ensureMonth(mKey);
+  const visits = m.visits.filter(v=>v.date===iso).sort((a,b)=>a.seq-b.seq);
+  const tasks = m.tasks.filter(t=>t.date===iso).sort((a,b)=>a.seq-b.seq);
+
+  const dow = new Date(iso+'T00:00:00').getDay();
+  document.getElementById('entryDayInfo').textContent =
+    new Date(iso+'T00:00:00').toLocaleDateString('en-US',{weekday:'long', year:'numeric', month:'long', day:'numeric'}) +
+    (dow===0 ? '  ·  Sunday' : '');
+
+  const visDiv = document.getElementById('visitList');
+  visDiv.innerHTML = visits.length ? '<table><thead><tr><th>Place</th><th>Customer</th><th>Hrs</th><th>Result</th><th></th></tr></thead><tbody>'+
+    visits.map(v=>`<tr><td>${v.place}</td><td>${v.customer}</td><td>${v.hours||DATA.assumptions.visitHours}</td><td>${v.result}</td>
+      <td><button class="iconbtn" style="color:var(--accent)" onclick="startEditVisit('${v.id}')">✎</button><button class="iconbtn" onclick="deleteVisit('${v.id}')">✕</button></td></tr>`).join('')+'</tbody></table>'
+    : '<div class="empty">No visits logged for this day yet.</div>';
+
+  const taskDiv = document.getElementById('taskList');
+  taskDiv.innerHTML = tasks.length ? '<table><thead><tr><th>Task</th><th>Place</th><th>Hrs</th><th></th></tr></thead><tbody>'+
+    tasks.map(t=>`<tr><td>${t.description}</td><td>${t.place||'HQ (no travel)'}</td><td>${t.hours||DATA.assumptions.visitHours}</td>
+      <td><button class="iconbtn" style="color:var(--accent)" onclick="startEditTask('${t.id}')">✎</button><button class="iconbtn" onclick="deleteTask('${t.id}')">✕</button></td></tr>`).join('')+'</tbody></table>'
+    : '<div class="empty">No tasks logged for this day yet.</div>';
+
+  renderItinerary(iso);
+  renderPlaceList();
+  renderAreaChips();
+}
+
+function renderItinerary(iso){
+  const legs = dayLegsWithPolicy(iso);
+  const card = document.getElementById('itineraryCard');
+  if(!legs.length){ card.style.display='none'; return; }
+  card.style.display='block';
+  const box = document.getElementById('itineraryBox');
+  box.innerHTML = '<table><thead><tr><th>Dep</th><th>From</th><th>Arr</th><th>To</th><th>Mode</th><th>KM</th><th>Fare ₹</th></tr></thead><tbody>'+
+    legs.map((l,i)=>`<tr${l.unknown?' style="background:rgba(200,120,0,.15)"':(l.source==='map'?' style="background:rgba(60,140,255,.10)"':'')}>
+      <td>${l.depTime}</td><td>${l.from}</td><td>${l.arrTime}</td><td>${l.to}</td>
+      <td><b>${l.mode}</b></td>
+      <td><input type="number" step="0.1" value="${l.km}" onchange="editLeg('${iso}',${i},'km',this.value)"></td>
+      <td><input type="number" value="${l.fare}" onchange="editLeg('${iso}',${i},'fare',this.value)" ${l.mode==='BIKE'?'title="Not paid on bike legs, but you can still override"':''}></td>
+    </tr>`).join('') + '</tbody></table>' +
+    (legs.some(l=>l.unknown) ? '<div class="warn">⚠ Orange rows: this place has no route or map coordinates yet — enter the KM (and, in Settings, its lat/lon) so it\'s remembered for next time.</div>' : '') +
+    (legs.some(l=>l.source==='map') ? '<div class="hint" style="color:#3c8cff">🗺 Blue rows: distance estimated from map coordinates (not yet a route you\'ve actually logged) — correct the KM if it looks off.</div>' : '');
+}
+function editLeg(iso, idx, field, value){
+  const legs = dayLegsWithPolicy(iso);
+  const leg = legs[idx]; if(!leg) return;
+  const km = field==='km' ? value : leg.km;
+  const fare = field==='fare' ? value : leg.fare;
+  setRoute(leg.from, leg.to, km, fare);
+  saveData();
+  renderItinerary(iso);
+  toast('Route updated');
+}
+
+let editingVisitId = null;
+let editingTaskId = null;
+
+function startEditVisit(id){
+  const iso = entryDateEl.value; const m = ensureMonth(monthKeyOf(iso));
+  const v = m.visits.find(x=>x.id===id); if(!v) return;
+  editingVisitId = id;
+  document.getElementById('visPlace').value = v.place;
+  document.getElementById('visCustomer').value = v.customer;
+  document.getElementById('visContact').value = v.contact||'';
+  document.getElementById('visHours').value = v.hours||'';
+  document.getElementById('visResult').value = v.result;
+  currentAreas = (v.areas||[]).slice();
+  renderAreaChips();
+  document.getElementById('addVisitBtn').textContent = '✓ Update visit';
+  document.getElementById('visitCancelEdit').style.display='inline-block';
+  document.getElementById('visPlace').scrollIntoView({behavior:'smooth', block:'center'});
+}
+function cancelEditVisit(){
+  editingVisitId = null;
+  document.getElementById('visCustomer').value=''; document.getElementById('visContact').value='';
+  document.getElementById('visHours').value=''; document.getElementById('visPlace').value='';
+  document.getElementById('visResult').value='1 CONTRACT CREATED';
+  currentAreas = []; renderAreaChips();
+  document.getElementById('addVisitBtn').textContent = '+ Log visit';
+  document.getElementById('visitCancelEdit').style.display='none';
+}
+function startEditTask(id){
+  const iso = entryDateEl.value; const m = ensureMonth(monthKeyOf(iso));
+  const t = m.tasks.find(x=>x.id===id); if(!t) return;
+  editingTaskId = id;
+  document.getElementById('taskDesc').value = t.description;
+  document.getElementById('taskHours').value = t.hours||'';
+  document.getElementById('taskPlace').value = t.place||'';
+  document.getElementById('addTaskBtn').textContent = '✓ Update task';
+  document.getElementById('taskCancelEdit').style.display='inline-block';
+  document.getElementById('taskDesc').scrollIntoView({behavior:'smooth', block:'center'});
+}
+function cancelEditTask(){
+  editingTaskId = null;
+  document.getElementById('taskDesc').value=''; document.getElementById('taskHours').value=''; document.getElementById('taskPlace').value='';
+  document.getElementById('addTaskBtn').textContent = '+ Log task';
+  document.getElementById('taskCancelEdit').style.display='none';
+}
+
+function deleteVisit(id){
+  const iso = entryDateEl.value; const m = ensureMonth(monthKeyOf(iso));
+  m.visits = m.visits.filter(v=>v.id!==id); saveData();
+  if(editingVisitId===id) cancelEditVisit();
+  renderEntryTab();
+}
+function deleteTask(id){
+  const iso = entryDateEl.value; const m = ensureMonth(monthKeyOf(iso));
+  m.tasks = m.tasks.filter(t=>t.id!==id); saveData();
+  if(editingTaskId===id) cancelEditTask();
+  renderEntryTab();
+}
+
+document.getElementById('dayPrev').addEventListener('click', ()=>{ const d=new Date(entryDateEl.value+'T00:00:00'); d.setDate(d.getDate()-1); entryDateEl.value=isoDate(d); renderEntryTab(); });
+document.getElementById('dayNext').addEventListener('click', ()=>{ const d=new Date(entryDateEl.value+'T00:00:00'); d.setDate(d.getDate()+1); entryDateEl.value=isoDate(d); renderEntryTab(); });
+document.getElementById('dayToday').addEventListener('click', ()=>{ entryDateEl.value=isoDate(new Date()); renderEntryTab(); });
+entryDateEl.addEventListener('change', renderEntryTab);
+
+let currentAreas = [];
+function renderAreaChips(){
+  const box = document.getElementById('visAreasChips');
+  box.innerHTML = DATA.areaTags.map(tag=>{
+    const on = currentAreas.includes(tag);
+    return `<span class="chip ${on?'':'off'}" data-tag="${tag}">${tag}</span>`;
+  }).join('');
+  box.querySelectorAll('.chip').forEach(c=>{
+    c.addEventListener('click', ()=>{
+      const tag = c.dataset.tag;
+      if(currentAreas.includes(tag)) currentAreas = currentAreas.filter(t=>t!==tag);
+      else currentAreas.push(tag);
+      renderAreaChips();
+    });
+  });
+}
+document.getElementById('visAreaCustom').addEventListener('keydown', (e)=>{
+  if(e.key==='Enter'){
+    e.preventDefault();
+    const v = e.target.value.trim().toUpperCase();
+    if(v){ if(!DATA.areaTags.includes(v)) DATA.areaTags.push(v); if(!currentAreas.includes(v)) currentAreas.push(v); saveData(); e.target.value=''; renderAreaChips(); }
+  }
+});
+
+document.getElementById('addVisitBtn').addEventListener('click', ()=>{
+  const iso = entryDateEl.value;
+  const place = document.getElementById('visPlace').value.trim().toUpperCase();
+  const customer = document.getElementById('visCustomer').value.trim();
+  const contact = document.getElementById('visContact').value.trim();
+  const hoursRaw = document.getElementById('visHours').value;
+  const hours = hoursRaw==='' ? null : parseFloat(hoursRaw);
+  const result = document.getElementById('visResult').value.trim() || '1 CONTRACT CREATED';
+  if(!place || !customer){ toast('Fill place and customer name'); return; }
+  const m = ensureMonth(monthKeyOf(iso));
+  if(editingVisitId){
+    const v = m.visits.find(x=>x.id===editingVisitId);
+    if(v){ Object.assign(v, {place, customer, contact, hours, areas:currentAreas.slice(), result}); }
+    toast('Visit updated');
+    cancelEditVisit();
+  } else {
+    DATA.seqCounter = (DATA.seqCounter||0)+1;
+    m.visits.push({id:uid(), date:iso, seq:DATA.seqCounter, place, customer, contact, hours, areas:currentAreas.slice(), result});
+    toast('Visit logged');
+  }
+  addPlace(place);
+  saveData();
+  document.getElementById('visCustomer').value=''; document.getElementById('visContact').value='';
+  document.getElementById('visHours').value=''; document.getElementById('visResult').value='1 CONTRACT CREATED';
+  document.getElementById('visPlace').value='';
+  currentAreas = [];
+  renderEntryTab();
+});
+
+document.getElementById('addTaskBtn').addEventListener('click', ()=>{
+  const iso = entryDateEl.value;
+  const description = document.getElementById('taskDesc').value.trim();
+  const hoursRaw = document.getElementById('taskHours').value;
+  const hours = hoursRaw==='' ? null : parseFloat(hoursRaw);
+  const place = document.getElementById('taskPlace').value.trim().toUpperCase();
+  if(!description){ toast('Describe the task'); return; }
+  const m = ensureMonth(monthKeyOf(iso));
+  if(editingTaskId){
+    const t = m.tasks.find(x=>x.id===editingTaskId);
+    if(t){ Object.assign(t, {description, hours, place: place||null}); }
+    toast('Task updated');
+    cancelEditTask();
+  } else {
+    DATA.seqCounter = (DATA.seqCounter||0)+1;
+    m.tasks.push({id:uid(), date:iso, seq:DATA.seqCounter, description, hours, place: place||null});
+    toast('Task logged');
+  }
+  if(place) addPlace(place);
+  saveData();
+  document.getElementById('taskDesc').value=''; document.getElementById('taskHours').value=''; document.getElementById('taskPlace').value='';
+  renderEntryTab();
+});
+
+/* ---------------- Month Setup tab ---------------- */
+const monthPicker = document.getElementById('monthPicker');
+monthPicker.value = isoDate(new Date()).slice(0,7);
+monthPicker.addEventListener('change', renderMonthTab);
+
+function computeStats(mKey){
+  const m = ensureMonth(mKey);
+  const total = daysInMonth(mKey);
+  const sundays = sundaysInMonth(mKey);
+  const holidays = m.holidays.length;
+  const workingDays = Math.max(0, total - sundays - holidays);
+  const tourDates = new Set([
+    ...m.visits.map(v=>v.date),
+    ...m.tasks.filter(t=>t.place).map(t=>t.date)
+  ]);
+  const tourDays = tourDates.size;
+  const leaveDays = parseFloat(m.leaveDays)||0;
+  const hqDays = Math.max(0, workingDays - tourDays - leaveDays);
+  return {total, sundays, holidays, workingDays, tourDays, leaveDays, hqDays};
+}
+
+function renderMonthTab(){
+  const mKey = monthPicker.value; if(!mKey) return;
+  const m = ensureMonth(mKey);
+  const s = computeStats(mKey);
+  document.getElementById('monthStats').innerHTML = `
+    <div class="stat"><div class="n">${s.total}</div><div class="l">Calendar days</div></div>
+    <div class="stat"><div class="n">${s.sundays}</div><div class="l">Sundays</div></div>
+    <div class="stat"><div class="n">${s.holidays}</div><div class="l">Holidays</div></div>
+    <div class="stat"><div class="n">${s.workingDays}</div><div class="l">Working days</div></div>
+    <div class="stat"><div class="n">${s.tourDays}</div><div class="l">Tour days</div></div>
+    <div class="stat"><div class="n">${s.hqDays}</div><div class="l">HQ days</div></div>
+  `;
+  document.getElementById('leaveText').value = m.leaveText;
+  document.getElementById('leaveDays').value = m.leaveDays;
+
+  const hl = document.getElementById('holidayList');
+  hl.innerHTML = m.holidays.length ? m.holidays.map(h=>
+    `<span class="chip">${fmtDMY(h.date)}${h.label? ' — '+h.label:''} <span style="cursor:pointer" onclick="removeHoliday('${mKey}','${h.date}')">✕</span></span>`
+  ).join('') : '<span class="smallnote">No extra holidays marked.</span>';
+
+  const tbody = document.querySelector('#targetsTable tbody');
+  tbody.innerHTML = TARGET_VERTICALS.map(v=>{
+    const t = m.targets[v];
+    const pct = t.target>0 ? Math.round((t.achievement/t.target)*1000)/10 : null;
+    return `<tr><td>${v}</td>
+      <td><input type="number" value="${t.target}" onchange="updateTarget('${mKey}','${v}','target',this.value)"></td>
+      <td><input type="number" value="${t.achievement}" onchange="updateTarget('${mKey}','${v}','achievement',this.value)"></td>
+      <td>${pct===null?'-':pct+'%'}</td></tr>`;
+  }).join('') + (()=>{
+    const tt = TARGET_VERTICALS.reduce((s,v)=>s+(parseFloat(m.targets[v].target)||0),0);
+    const ta = TARGET_VERTICALS.reduce((s,v)=>s+(parseFloat(m.targets[v].achievement)||0),0);
+    const tp = tt>0 ? Math.round((ta/tt)*1000)/10 : null;
+    return `<tr style="font-weight:700"><td>Total</td><td>${tt}</td><td>${ta}</td><td>${tp===null?'-':tp+'%'}</td></tr>`;
+  })();
+}
+function updateTarget(mKey, vertical, field, value){ ensureMonth(mKey).targets[vertical][field] = parseFloat(value)||0; saveData(); renderMonthTab(); }
+function removeHoliday(mKey, date){ const m=ensureMonth(mKey); m.holidays = m.holidays.filter(h=>h.date!==date); saveData(); renderMonthTab(); }
+document.getElementById('leaveText').addEventListener('input', e=>{ ensureMonth(monthPicker.value).leaveText = e.target.value; saveData(); });
+document.getElementById('leaveDays').addEventListener('input', e=>{ ensureMonth(monthPicker.value).leaveDays = parseFloat(e.target.value)||0; saveData(); renderMonthTab(); });
+document.getElementById('addHolidayBtn').addEventListener('click', ()=>{
+  const date = document.getElementById('holidayAdd').value;
+  const label = document.getElementById('holidayLabel').value.trim();
+  if(!date){ toast('Pick a date'); return; }
+  const mKey = monthKeyOf(date);
+  if(mKey !== monthPicker.value){ toast('Date is outside the selected month'); return; }
+  const m = ensureMonth(mKey);
+  if(!m.holidays.some(h=>h.date===date)) m.holidays.push({date,label});
+  saveData(); document.getElementById('holidayAdd').value=''; document.getElementById('holidayLabel').value=''; renderMonthTab();
+});
+
+/* ---------------- Generate tab ---------------- */
+const genMonthPicker = document.getElementById('genMonthPicker');
+genMonthPicker.value = isoDate(new Date()).slice(0,7);
+genMonthPicker.addEventListener('change', renderGenerateTab);
+
+function renderGenerateTab(){
+  const mKey = genMonthPicker.value; if(!mKey) return;
+  const legs = monthLegsResolved(mKey);
+  const bikeKm = legs.filter(l=>l.mode==='BIKE').reduce((a,l)=>a+(l.km||0),0);
+  const busKm = legs.filter(l=>l.mode==='BUS').reduce((a,l)=>a+(l.km||0),0);
+  const busFare = legs.filter(l=>l.mode==='BUS').reduce((a,l)=>a+(l.fare||0),0);
+  const unknownCount = legs.filter(l=>l.unknown).length;
+  document.getElementById('genStats').innerHTML = `
+    <div class="stat"><div class="n">${legs.length}</div><div class="l">Legs computed</div></div>
+    <div class="stat"><div class="n">${bikeKm}</div><div class="l">Bike KM</div></div>
+    <div class="stat"><div class="n">${busKm} / ₹${busFare}</div><div class="l">Bus KM / Fare</div></div>
+    <div class="stat"><div class="n">${unknownCount}</div><div class="l">Unknown routes</div></div>
+  `;
+  document.getElementById('genWarnings').textContent = unknownCount
+    ? '⚠ '+unknownCount+' leg(s) use a route not yet in your database — open Day Log on those dates to fix the KM/Fare, or edit them in Settings → Places & Routes.'
+    : '';
+}
+document.getElementById('genDiaryBtn').addEventListener('click', ()=> generateAndSave('diary', genMonthPicker.value));
+document.getElementById('genTaBtn').addEventListener('click', ()=> generateAndSave('ta', genMonthPicker.value));
+
+let downloadsNs = null;
+let downloadsChecked = false;
+async function getDownloads(){
+  if(downloadsChecked) return downloadsNs;
+  downloadsChecked = true;
+  try{
+    if(typeof claude !== 'undefined' && claude && claude.use){
+      downloadsNs = await claude.use('downloads');
+    }
+  }catch(e){ downloadsNs = null; }
+  return downloadsNs;
+}
+// Plain browser download — used automatically when not running inside a claude.ai artifact
+// (e.g. hosted on Netlify, GitHub Pages, or opened as a local file).
+function browserDownload(filename, blob){
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement('a');
+  a.href = url; a.download = filename;
+  document.body.appendChild(a); a.click(); document.body.removeChild(a);
+  setTimeout(()=>URL.revokeObjectURL(url), 4000);
+}
+
+function docxTable(headerCells, rows, widths){
+  const {Table, TableRow, TableCell, Paragraph, TextRun, WidthType} = docx;
+  function cell(text, opts){
+    opts = opts||{};
+    return new TableCell({
+      width: {size: opts.width||Math.round(100/headerCells.length), type: WidthType.PERCENTAGE},
+      shading: opts.header ? {fill:'D9D9D9'} : undefined,
+      children: [new Paragraph({children:[new TextRun({text:String(text==null?'':text), bold:!!opts.header})]})]
+    });
+  }
+  const header = new TableRow({tableHeader:true, children: headerCells.map((h,i)=>cell(h,{header:true, width: widths?widths[i]:null}))});
+  const body = rows.map(r=> new TableRow({children: r.map((c,i)=>cell(c,{width: widths?widths[i]:null}))}));
+  return new Table({rows:[header, ...body], width:{size:100, type:WidthType.PERCENTAGE}});
+}
+function pgf(text, opts){
+  const {Paragraph, TextRun} = docx;
+  opts = opts||{};
+  return new Paragraph({heading: opts.heading, spacing:{after:opts.after!=null?opts.after:120},
+    children:[new TextRun({text:text, bold:!!opts.bold, underline: opts.underline?{}:undefined, size: opts.size})]});
+}
+
+async function buildTaBillDocx(mKey){
+  const {Document, HeadingLevel} = docx;
+  const p = DATA.profile;
+  const m = ensureMonth(mKey);
+  const legs = monthLegsResolved(mKey);
+  const rows = legs.map(l=>[fmtDMY(l.date), fmtTimeHM(l.depTime), l.from, fmtDMY(l.date), fmtTimeHM(l.arrTime), l.to, l.mode, String(l.km), l.fare>0?String(l.fare):'-']);
+  const byMode = {};
+  legs.forEach(l=>{ byMode[l.mode]=byMode[l.mode]||{km:0,fare:0}; byMode[l.mode].km+=(l.km||0); byMode[l.mode].fare+=(l.fare||0); });
+  const totalParas = Object.keys(byMode).map(mode=>{
+    const t = byMode[mode];
+    const txt = 'Total Distance Traveled by '+mode+': '+t.km+' KM' + (t.fare>0 ? '   ·   Total Fare: ₹'+t.fare : '');
+    return pgf(txt, {bold:true});
+  });
+  const children = [
+    pgf('TA BILL OF '+p.designation+' '+p.division+' DIVISION FOR THE MONTH OF '+monthName(mKey).toUpperCase(), {heading: HeadingLevel.HEADING_2, underline:true, after:200}),
+    pgf('NAME: '+p.name, {bold:true, after:60}),
+    pgf('HQ: '+p.hq, {bold:true, after:60}),
+    pgf('LEAVE: '+(m.leaveText||'-'), {bold:true, after:200}),
+    docxTable(['Dep Date','Time','Place','Arr Date','Time','Place','Mode','KMS','Fare (₹)'], rows.length?rows:[['-','-','No travel logged this month','-','-','-','-','-','-']]),
+    pgf('', {after:200}),
+    pgf('TOTALS:', {bold:true, after:100}),
+    ...totalParas,
+    pgf('', {after:400}),
+    pgf(p.division+'                              '+p.name+'                              '+p.designation+' '+p.division, {bold:true})
+  ];
+  return new Document({sections:[{children}]});
+}
+
+async function buildDiaryDocx(mKey){
+  const {Document, HeadingLevel} = docx;
+  const p = DATA.profile;
+  const m = ensureMonth(mKey);
+  const s = computeStats(mKey);
+  const targetRows = TARGET_VERTICALS.map(v=>{
+    const t = m.targets[v]; const pct = t.target>0 ? Math.round((t.achievement/t.target)*1000)/10 : 0;
+    return [v, String(t.target), String(t.achievement), pct+'%'];
+  });
+  const tt = TARGET_VERTICALS.reduce((s2,v)=>s2+(parseFloat(m.targets[v].target)||0),0);
+  const ta = TARGET_VERTICALS.reduce((s2,v)=>s2+(parseFloat(m.targets[v].achievement)||0),0);
+  const tp = tt>0 ? Math.round((ta/tt)*1000)/10 : 0;
+  targetRows.push(['Total', String(tt), String(ta), tp+'%']);
+
+  const visits = m.visits.slice().sort((a,b)=> a.date===b.date ? a.seq-b.seq : a.date.localeCompare(b.date));
+  const visitRows = visits.map(v=>[fmtDMY(v.date), (v.hours||DATA.assumptions.visitHours)+'HR', v.customer+'\n'+v.place, v.contact||'-', (v.areas||[]).join(', ')||'-', v.result]);
+
+  const tasks = m.tasks.slice().sort((a,b)=> a.date===b.date ? a.seq-b.seq : a.date.localeCompare(b.date));
+  const taskRows = tasks.map(t=>[fmtDMY(t.date), (t.hours||DATA.assumptions.visitHours)+'HR', t.description, t.place||'HQ']);
+
+  const basicRows = [
+    ['Region', p.region], ['Division', p.division], ['Name of Marketing Executive', p.name],
+    ['Designation', p.designation], ['Office to which attached', p.hq], ['Month', monthName(mKey)],
+    ['Total No. of Days on Tour/Visit', String(s.tourDays)], ['Total No. of days at HQ', String(s.hqDays)],
+    ['No. of days on Leave', m.leaveText||'0'], ['Total No. of working days in the month', String(s.workingDays)]
   ];
 
-  let entries = JSON.parse(localStorage.getItem('me_entries')) || [];
+  const children = [
+    pgf('DIARY FOR THE MONTH OF '+monthName(mKey).toUpperCase(), {heading: HeadingLevel.HEADING_2, underline:true, after:200}),
+    pgf('A. Basic Details', {bold:true, after:100}),
+    docxTable(['Field','Value'], basicRows, [40,60]),
+    pgf('', {after:200}),
+    pgf('B. Targets & Achievement (During the Month)', {bold:true, after:100}),
+    docxTable(['Service / Vertical','Target Assigned','Achievement (₹)','Percentage of Achievement'], targetRows),
+    pgf('', {after:200}),
+    pgf('C. Daily Activity Report', {bold:true, after:100}),
+    docxTable(['Date','Duration','Name & Address of Customer','Contact No','New Areas of Business Introduced','Overall Result of Visit'], visitRows.length?visitRows:[['-','-','No visits logged','-','-','-']])
+  ];
+  if(tasks.length){
+    children.push(pgf('', {after:200}));
+    children.push(pgf('D. Non-Marketing Duties (for reference)', {bold:true, after:100}));
+    children.push(docxTable(['Date','Duration','Task','Place'], taskRows));
+  }
+  children.push(pgf('', {after:400}));
+  children.push(pgf(p.division+'                              '+p.name+'                              '+p.designation+' '+p.division, {bold:true}));
+  return new Document({sections:[{children}]});
+}
 
-  window.onload = function() {
-    const destSelect = document.getElementById('destination');
-    MASTER_OFFICES.forEach(o => {
-      let opt = document.createElement('option');
-      opt.value = o.name;
-      opt.text = `${o.name} (${o.kms} km - ${o.mode})`;
-      destSelect.add(opt);
-    });
-    renderAll();
+async function generateAndSave(kind, mKey){
+  if(typeof docx==='undefined'){ toast('Document library failed to load — check your connection and retry'); return; }
+  toast('Building document…');
+  try{
+    const doc = kind==='diary' ? await buildDiaryDocx(mKey) : await buildTaBillDocx(mKey);
+    const blob = await docx.Packer.toBlob(doc);
+    const filename = (kind==='diary'?'Diary_':'TA_Bill_')+mKey+'.docx';
+    const dl = await getDownloads();
+    if(dl){
+      const res = await dl.save({filename, data: blob});
+      toast(res.status==='saved' ? 'Saved '+filename : 'Sent '+filename);
+    } else {
+      browserDownload(filename, blob);
+      toast('Downloaded '+filename);
+    }
+  }catch(e){
+    console.error(e);
+    if(e && e.code==='declined'){ /* user said no, no toast needed */ }
+    else toast('Could not create the document: '+(e && e.message ? e.message : 'unknown error'));
+  }
+}
+
+/* ---------------- Settings tab ---------------- */
+function renderSettingsTab(){
+  const p = DATA.profile;
+  document.getElementById('pName').value = p.name;
+  document.getElementById('pDesignation').value = p.designation;
+  document.getElementById('pRegion').value = p.region;
+  document.getElementById('pDivision').value = p.division;
+  document.getElementById('pHq').value = p.hq;
+  document.getElementById('aStart').value = DATA.assumptions.startTime;
+  document.getElementById('aSpeed').value = DATA.assumptions.speedKmh;
+  document.getElementById('aHours').value = DATA.assumptions.visitHours;
+  document.getElementById('aBikeLimit').value = DATA.assumptions.bikeLimitKm;
+  renderRoutesTable();
+}
+function renderRoutesTable(){
+  const tbody = document.querySelector('#routesTable tbody');
+  const entries = Object.keys(DATA.routes).filter(k=>k.startsWith('HQ|')).map(k=>({key:k, place:k.split('|')[1], ...DATA.routes[k]})).sort((a,b)=>a.place.localeCompare(b.place));
+  tbody.innerHTML = entries.map(r=>{
+    const c = DATA.coords[r.place];
+    return `<tr>
+    <td>${r.place}</td>
+    <td><input type="number" step="0.1" value="${r.km}" onchange="updateRouteRow('${r.key}','km',this.value)"></td>
+    <td><input type="number" value="${r.fare}" onchange="updateRouteRow('${r.key}','fare',this.value)" title="Fare used once this place's travel falls in the BUS phase"></td>
+    <td><input type="number" step="0.000001" value="${c?c.lat.toFixed(5):''}" placeholder="lat" style="min-width:76px" onchange="updateCoord('${r.place}','lat',this.value)"></td>
+    <td><input type="number" step="0.000001" value="${c?c.lon.toFixed(5):''}" placeholder="lon" style="min-width:76px" onchange="updateCoord('${r.place}','lon',this.value)"></td>
+    <td><button class="iconbtn" onclick="deleteRoute('${r.key}')">✕</button></td>
+  </tr>`;
+  }).join('');
+}
+function updateRouteRow(key, field, value){
+  const r = DATA.routes[key]; if(!r) return;
+  r[field] = parseFloat(value)||0;
+  saveData(); toast('Saved');
+}
+function updateCoord(place, field, value){
+  const v = parseFloat(value); if(isNaN(v)) return;
+  DATA.coords[place] = DATA.coords[place] || {lat:0,lon:0};
+  DATA.coords[place][field] = v;
+  saveData();
+}
+function deleteRoute(key){ delete DATA.routes[key]; saveData(); renderRoutesTable(); }
+document.getElementById('addPlaceBtn').addEventListener('click', ()=>{
+  const name = document.getElementById('newPlaceName').value.trim().toUpperCase();
+  const km = parseFloat(document.getElementById('newPlaceKm').value)||0;
+  const fare = parseFloat(document.getElementById('newPlaceFare').value)||0;
+  const lat = parseFloat(document.getElementById('newPlaceLat').value);
+  const lon = parseFloat(document.getElementById('newPlaceLon').value);
+  if(!name){ toast('Enter a place name'); return; }
+  DATA.routes['HQ|'+name] = {km, fare};
+  if(!isNaN(lat) && !isNaN(lon)) DATA.coords[name] = {lat, lon};
+  addPlace(name); saveData();
+  document.getElementById('newPlaceName').value=''; document.getElementById('newPlaceKm').value=''; document.getElementById('newPlaceFare').value='';
+  document.getElementById('newPlaceLat').value=''; document.getElementById('newPlaceLon').value='';
+  renderRoutesTable(); toast('Place added');
+});
+document.getElementById('saveProfileBtn').addEventListener('click', ()=>{
+  DATA.profile = {
+    name: document.getElementById('pName').value.trim(),
+    designation: document.getElementById('pDesignation').value.trim(),
+    region: document.getElementById('pRegion').value.trim(),
+    division: document.getElementById('pDivision').value.trim(),
+    hq: document.getElementById('pHq').value.trim()
   };
+  saveData(); toast('Profile saved');
+});
+document.getElementById('saveAssumptionsBtn').addEventListener('click', ()=>{
+  DATA.assumptions = {
+    startTime: document.getElementById('aStart').value || '09:00',
+    speedKmh: parseFloat(document.getElementById('aSpeed').value)||20,
+    visitHours: parseFloat(document.getElementById('aHours').value)||4,
+    bikeLimitKm: parseFloat(document.getElementById('aBikeLimit').value)||300
+  };
+  saveData(); toast('Saved'); renderEntryTab();
+});
+document.getElementById('exportBtn').addEventListener('click', ()=>{
+  const blob = new Blob([JSON.stringify(DATA, null, 2)], {type:'application/json'});
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement('a'); a.href=url; a.download='me-diary-ta-backup.json';
+  document.body.appendChild(a); a.click(); document.body.removeChild(a);
+  setTimeout(()=>URL.revokeObjectURL(url), 4000);
+});
+document.getElementById('importBtn').addEventListener('click', ()=> document.getElementById('importFile').click());
+document.getElementById('importFile').addEventListener('change', (e)=>{
+  const file = e.target.files[0]; if(!file) return;
+  const reader = new FileReader();
+  reader.onload = ()=>{
+    try{
+      const parsed = JSON.parse(reader.result);
+      DATA = Object.assign(defaultData(), parsed);
+      saveData(); toast('Backup imported');
+      renderEntryTab(); renderSettingsTab();
+    }catch(err){ toast('Invalid backup file'); }
+  };
+  reader.readAsText(file);
+});
+document.getElementById('wipeBtn').addEventListener('click', ()=>{
+  if(!confirm('This erases all diary and TA bill data in this browser permanently. Continue?')) return;
+  localStorage.removeItem(STORE_KEY);
+  DATA = defaultData(); saveData();
+  toast('All data erased');
+  renderEntryTab(); renderSettingsTab(); renderMonthTab();
+});
 
-  function autoFillDestination() {
-    const val = document.getElementById('destination').value;
-    const dest = MASTER_OFFICES.find(o => o.name === val);
-    if(dest) {
-      document.getElementById('mode').value = dest.mode;
-      document.getElementById('kms').value = dest.kms;
-      document.getElementById('fare').value = dest.fare;
-      document.getElementById('depTime').value = dest.dep;
-      document.getElementById('arrTime').value = dest.arr;
-      document.getElementById('retDepTime').value = dest.rDep;
-      document.getElementById('retArrTime').value = dest.rArr;
-    }
-  }
-
-  function saveEntry(e) {
-    e.preventDefault();
-    const entry = {
-      id: Date.now(),
-      date: document.getElementById('tripDate').value,
-      place: document.getElementById('destination').value,
-      mode: document.getElementById('mode').value,
-      kms: parseFloat(document.getElementById('kms').value),
-      fare: parseFloat(document.getElementById('fare').value) || 0,
-      depTime: document.getElementById('depTime').value,
-      arrTime: document.getElementById('arrTime').value,
-      retDepTime: document.getElementById('retDepTime').value,
-      retArrTime: document.getElementById('retArrTime').value,
-      customerName: document.getElementById('customerName').value,
-      customerPhone: document.getElementById('customerPhone').value,
-      businessIntroduced: document.getElementById('businessIntroduced').value,
-      resultOfVisit: document.getElementById('resultOfVisit').value,
-      otherTasks: document.getElementById('otherTasks').value,
-      otherRemarks: document.getElementById('otherRemarks').value
-    };
-
-    entries.push(entry);
-    entries.sort((a,b) => new Date(a.date) - new Date(b.date));
-    localStorage.setItem('me_entries', JSON.stringify(entries));
-    document.getElementById('entryForm').reset();
-    renderAll();
-    alert('Entry saved successfully!');
-  }
-
-  function deleteEntry(id) {
-    if(confirm('Delete this entry?')) {
-      entries = entries.filter(e => e.id !== id);
-      localStorage.setItem('me_entries', JSON.stringify(entries));
-      renderAll();
-    }
-  }
-
-  function renderAll() {
-    const m = document.getElementById('billingMonth').value;
-    const currentMonthEntries = entries.filter(e => e.date.startsWith(m));
-    
-    // Render Log Table
-    document.getElementById('entryCount').innerText = currentMonthEntries.length;
-    const tbody = document.querySelector('#logTable tbody');
-    tbody.innerHTML = '';
-    currentMonthEntries.forEach(e => {
-      let tr = document.createElement('tr');
-      tr.innerHTML = `
-        <td>${e.date}</td>
-        <td>${e.place}</td>
-        <td>${e.mode}</td>
-        <td>${e.kms * 2}</td>
-        <td>₹ ${e.fare * 2}</td>
-        <td>${e.customerName || '-'}</td>
-        <td>${e.otherTasks || '-'}</td>
-        <td class="no-print"><button onclick="deleteEntry(${e.id})" style="color:red; cursor:pointer;">✖</button></td>
-      `;
-      tbody.appendChild(tr);
-    });
-
-    renderTABill(currentMonthEntries);
-    renderDiary(currentMonthEntries);
-  }
-
-  function renderTABill(filtered) {
-    const m = document.getElementById('billingMonth').value;
-    const [year, monthNum] = m.split('-');
-    const monthNames = ["JANUARY", "FEBRUARY", "MARCH", "APRIL", "MAY", "JUNE", "JULY", "AUGUST", "SEPTEMBER", "OCTOBER", "NOVEMBER", "DECEMBER"];
-    const monthStr = `${monthNames[parseInt(monthNum)-1]} ${year}`;
-
-    document.getElementById('taMonthLabel').innerText = monthStr;
-    document.getElementById('taNameLabel').innerText = document.getElementById('meName').value;
-    document.getElementById('taHqLabel').innerText = document.getElementById('meHQ').value;
-    document.getElementById('taLeaveLabel').innerText = document.getElementById('leaveDays').value;
-    document.getElementById('taSignature').innerText = document.getElementById('meName').value;
-
-    const tbody = document.querySelector('#taPrintTable tbody');
-    tbody.innerHTML = '';
-    let bikeTotal = 0;
-    let busTotal = 0;
-    let fareTotal = 0;
-
-    filtered.forEach(e => {
-      const dParts = e.date.split('-');
-      const formattedDate = `${dParts[2]}/${dParts[1]}/${dParts[0]}`;
-      const singleFare = e.fare > 0 ? e.fare : '-';
-
-      if(e.mode === 'BIKE') bikeTotal += (e.kms * 2);
-      if(e.mode === 'BUS') {
-        busTotal += (e.kms * 2);
-        fareTotal += (e.fare * 2);
-      }
-
-      // Outward row
-      tbody.innerHTML += `
-        <tr>
-          <td>${formattedDate}</td>
-          <td>${e.depTime.replace(':','')}</td>
-          <td>HQ</td>
-          <td>${formattedDate}</td>
-          <td>${e.arrTime.replace(':','')}</td>
-          <td>${e.place}</td>
-          <td>${e.mode}</td>
-          <td>${e.kms}</td>
-          <td>${singleFare}</td>
-        </tr>
-      `;
-      // Return row
-      tbody.innerHTML += `
-        <tr>
-          <td>${formattedDate}</td>
-          <td>${e.retDepTime.replace(':','')}</td>
-          <td>${e.place}</td>
-          <td>${formattedDate}</td>
-          <td>${e.retArrTime.replace(':','')}</td>
-          <td>HQ</td>
-          <td>${e.mode}</td>
-          <td>${e.kms}</td>
-          <td>${singleFare}</td>
-        </tr>
-      `;
-    });
-
-    document.getElementById('totBikeKm').innerText = bikeTotal;
-    document.getElementById('totBusKm').innerText = busTotal;
-    document.getElementById('totFare').innerText = fareTotal;
-    document.getElementById('totBikeWords').innerText = convertNumberToWords(bikeTotal) + " KM ONLY";
-    document.getElementById('totBusWords').innerText = convertNumberToWords(busTotal) + " KM ONLY";
-  }
-
-  function renderDiary(filtered) {
-    const m = document.getElementById('billingMonth').value;
-    const [year, monthNum] = m.split('-');
-    const monthNames = ["JANUARY", "FEBRUARY", "MARCH", "APRIL", "MAY", "JUNE", "JULY", "AUGUST", "SEPTEMBER", "OCTOBER", "NOVEMBER", "DECEMBER"];
-    const monthStr = `${monthNames[parseInt(monthNum)-1]} ${year}`;
-
-    document.getElementById('diaryMonthLabel').innerText = monthStr;
-    document.getElementById('d_name').innerText = document.getElementById('meName').value;
-    document.getElementById('d_hq').innerText = document.getElementById('meHQ').value;
-    document.getElementById('d_month').innerText = monthNames[parseInt(monthNum)-1];
-    document.getElementById('d_tourDays').innerText = filtered.length;
-    document.getElementById('d_leave').innerText = document.getElementById('leaveDays').value;
-
-    // Targets Table
-    const tgBody = document.querySelector('#targetsTable tbody');
-    const verticals = [
-      { name: "Parcels", t: parseFloat(document.getElementById('t_parcels').value), a: parseFloat(document.getElementById('a_parcels').value) },
-      { name: "MO", t: parseFloat(document.getElementById('t_mo').value), a: parseFloat(document.getElementById('a_mo').value) },
-      { name: "CCS", t: parseFloat(document.getElementById('t_ccs').value), a: parseFloat(document.getElementById('a_ccs').value) },
-      { name: "IRGB", t: parseFloat(document.getElementById('t_irgb').value), a: parseFloat(document.getElementById('a_irgb').value) }
-    ];
-    let totT = 0, totA = 0;
-    tgBody.innerHTML = '';
-    verticals.forEach(v => {
-      totT += v.t; totA += v.a;
-      let pct = ((v.a / v.t) * 100).toFixed(1);
-      tgBody.innerHTML += `<tr><td>${v.name}</td><td>${v.t}</td><td>${v.a}</td><td>${pct}%</td></tr>`;
-    });
-    let totPct = ((totA / totT) * 100).toFixed(1);
-    tgBody.innerHTML += `<tr><td><b>Total</b></td><td><b>${totT}</b></td><td><b>${totA}</b></td><td><b>${totPct}%</b></td></tr>`;
-
-    // Activity Table
-    const actBody = document.querySelector('#activityTable tbody');
-    actBody.innerHTML = '';
-    filtered.filter(e => e.customerName).forEach(e => {
-      actBody.innerHTML += `
-        <tr>
-          <td>${e.date}</td>
-          <td>4HR</td>
-          <td>${e.customerName}<br><small>${e.place}</small></td>
-          <td>${e.customerPhone || '-'}</td>
-          <td>${e.businessIntroduced || '-'}</td>
-          <td>${e.resultOfVisit || '-'}</td>
-        </tr>
-      `;
-    });
-
-    // Other tasks Table
-    const oBody = document.querySelector('#otherTasksTable tbody');
-    oBody.innerHTML = '';
-    let idx = 1;
-    filtered.filter(e => e.otherTasks).forEach(e => {
-      oBody.innerHTML += `
-        <tr>
-          <td>${idx++}</td>
-          <td>${e.date}</td>
-          <td>${e.otherTasks}</td>
-          <td>${e.place}</td>
-          <td>${e.otherRemarks || 'Completed'}</td>
-        </tr>
-      `;
-    });
-  }
-
-  function switchTab(id) {
-    document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
-    document.querySelectorAll('.tab-content').forEach(c => c.classList.remove('active', 'print-active'));
-    document.getElementById(id).classList.add('active');
-  }
-
-  function preparePrint(id) {
-    document.querySelectorAll('.tab-content').forEach(c => c.classList.remove('active', 'print-active'));
-    document.getElementById(id).classList.add('active', 'print-active');
-  }
-
-  function convertNumberToWords(num) {
-    const a = ['','One ','Two ','Three ','Four ', 'Five ','Six ','Seven ','Eight ','Nine ','Ten ','Eleven ','Twelve ','Thirteen ','Fourteen ','Fifteen ','Sixteen ','Seventeen ','Eighteen ','Nineteen '];
-    const b = ['', '', 'Twenty','Thirty','Forty','Fifty', 'Sixty','Seventy','Eighty','Ninety'];
-    if ((num = num.toString()).length > 9) return 'overflow';
-    let n = ('000000000' + num).substr(-9).match(/^(\d{2})(\d{2})(\d{2})(\d{1})(\d{2})$/);
-    if (!n) return ''; 
-    let str = '';
-    str += (n[1] != 0) ? (a[Number(n[1])] || b[n[1][0]] + ' ' + a[n[1][1]]) + 'Crore ' : '';
-    str += (n[2] != 0) ? (a[Number(n[2])] || b[n[2][0]] + ' ' + a[n[2][1]]) + 'Lakh ' : '';
-    str += (n[3] != 0) ? (a[Number(n[3])] || b[n[3][0]] + ' ' + a[n[3][1]]) + 'Thousand ' : '';
-    str += (n[4] != 0) ? (a[Number(n[4])] || b[n[4][0]] + ' ' + a[n[4][1]]) + 'Hundred ' : '';
-    str += (n[5] != 0) ? ((str != '') ? 'and ' : '') + (a[Number(n[5])] || b[n[5][0]] + ' ' + a[n[5][1]]) : '';
-    return str.toUpperCase();
-  }
+/* ---------------- init ---------------- */
+renderEntryTab();
+if(DATA.sync && DATA.sync.enabled) pullFromCloud(true);
 </script>
 </body>
 </html>
