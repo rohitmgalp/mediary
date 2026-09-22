@@ -76,9 +76,29 @@ table input,table select{padding:4px 5px;font-size:.78rem;min-width:56px;}
 .holidayList{display:flex;flex-wrap:wrap;gap:6px;margin-top:6px;}
 .smallnote{font-size:.72rem;color:var(--muted);}
 ::placeholder{color:var(--muted);opacity:.7;}
+#lockScreen{position:fixed;inset:0;background:var(--bg);z-index:9999;display:flex;align-items:center;justify-content:center;padding:20px;}
+#lockScreen.hidden{display:none;}
+.lockBox{background:var(--panel);border:1px solid var(--line);border-radius:14px;padding:28px 24px;box-shadow:var(--shadow);max-width:320px;width:100%;text-align:center;}
+.lockBox h2{margin:4px 0 4px;font-size:1.1rem;}
+.lockBox p{color:var(--muted);font-size:.82rem;margin:0 0 16px;}
+.lockBox input{text-align:center;letter-spacing:.3em;font-size:1.1rem;margin-bottom:10px;}
+.lockBox button{width:100%;margin-top:4px;}
+.lockBox.shake{animation:shake .35s;}
+@keyframes shake{0%,100%{transform:translateX(0);}25%{transform:translateX(-8px);}75%{transform:translateX(8px);}}
+#lockError{color:var(--danger);font-size:.78rem;min-height:16px;margin-top:6px;}
 </style>
 </head>
 <body>
+<div id="lockScreen">
+  <div class="lockBox" id="lockBox">
+    <div style="font-size:2rem">🔒</div>
+    <h2>ME Diary &amp; TA Bill</h2>
+    <p>Enter your passcode to continue</p>
+    <input type="password" inputmode="numeric" id="lockInput" placeholder="••••••" maxlength="12" autocomplete="off">
+    <div id="lockError"></div>
+    <button class="primary" id="lockUnlockBtn">Unlock</button>
+  </div>
+</div>
 <div class="wrap">
   <h1>📔 ME Diary &amp; TA Bill</h1>
   <div class="sub">Just log your visits and non-marketing tasks — travel, timings, distance, fare and totals are all worked out for you.</div>
@@ -240,6 +260,7 @@ table input,table select{padding:4px 5px;font-size:.78rem;min-width:56px;}
       <div class="btnrow">
         <button id="exportBtn">Export backup (.json)</button>
         <button id="importBtn">Import backup (.json)</button>
+        <button id="lockNowBtn" onclick="lockNow()">🔒 Lock now</button>
         <button class="danger" id="wipeBtn">Erase all data</button>
       </div>
       <input type="file" id="importFile" accept="application/json" style="display:none">
@@ -295,6 +316,44 @@ table input,table select{padding:4px 5px;font-size:.78rem;min-width:56px;}
 <div class="toast" id="toast"></div>
 
 <script>
+/* ============ PASSCODE LOCK ============
+   Client-side only — a deterrent against casual snooping, not real
+   security. Anyone with dev-tools access to this page can bypass it.
+   The passcode is stored as a SHA-256 hash rather than plain text so
+   it's not immediately visible in view-source. */
+const LOCK_HASH = 'b7158b64a98516b31d0c23609f69265a868c594dda5b3c8da9e13159e209c9b6'; // sha256("123789")
+const LOCK_KEY = 'meDiaryUnlocked_v1';
+async function sha256Hex(str){
+  const buf = await crypto.subtle.digest('SHA-256', new TextEncoder().encode(str));
+  return Array.from(new Uint8Array(buf)).map(b=>b.toString(16).padStart(2,'0')).join('');
+}
+async function tryUnlock(){
+  const val = document.getElementById('lockInput').value;
+  const hash = await sha256Hex(val);
+  if(hash === LOCK_HASH){
+    try{ localStorage.setItem(LOCK_KEY, 'yes'); }catch(e){}
+    document.getElementById('lockScreen').classList.add('hidden');
+  } else {
+    const box = document.getElementById('lockBox');
+    document.getElementById('lockError').textContent = 'Incorrect passcode';
+    box.classList.remove('shake'); void box.offsetWidth; box.classList.add('shake');
+    document.getElementById('lockInput').value=''; document.getElementById('lockInput').focus();
+  }
+}
+function lockNow(){
+  try{ localStorage.removeItem(LOCK_KEY); }catch(e){}
+  document.getElementById('lockScreen').classList.remove('hidden');
+  document.getElementById('lockInput').value=''; document.getElementById('lockInput').focus();
+}
+(function initLock(){
+  let already = false;
+  try{ already = localStorage.getItem(LOCK_KEY) === 'yes'; }catch(e){}
+  if(already) document.getElementById('lockScreen').classList.add('hidden');
+  document.getElementById('lockUnlockBtn').addEventListener('click', tryUnlock);
+  document.getElementById('lockInput').addEventListener('keydown', e=>{ if(e.key==='Enter') tryUnlock(); });
+  if(!already) setTimeout(()=>document.getElementById('lockInput').focus(), 50);
+})();
+
 /* ============ SEED DATA (from your uploaded 2025-2026 TA bills) ============ */
 const SEED_ROUTES = [
 ["KARIMBA",38,0,"BIKE"],["PANAMANNA",10,0,"BIKE"],["POTTASSERY",42,0,"BIKE"],
