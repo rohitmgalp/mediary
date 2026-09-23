@@ -1042,20 +1042,33 @@ function browserDownload(filename, blob){
   setTimeout(()=>URL.revokeObjectURL(url), 4000);
 }
 
-function docxTable(headerCells, rows, widths){
-  const {Table, TableRow, TableCell, Paragraph, TextRun, WidthType} = docx;
-  function cell(text, opts){
-    opts = opts||{};
+// widthsDxa: REQUIRED array of column widths in twips (1440 = 1 inch), one per column.
+// Using explicit DXA widths + a fixed layout stops Word (especially mobile/iOS Word)
+// from auto-shrinking columns down to almost nothing, which is what produced the
+// one-letter-per-line wrapping.
+function docxTable(headerCells, rows, widthsDxa){
+  const {Table, TableRow, TableCell, Paragraph, TextRun, WidthType, TableLayoutType} = docx;
+  const cellMargins = {top:40, bottom:40, left:60, right:60};
+  function cell(text, w, header){
     return new TableCell({
-      width: {size: opts.width||Math.round(100/headerCells.length), type: WidthType.PERCENTAGE},
-      shading: opts.header ? {fill:'D9D9D9'} : undefined,
-      children: [new Paragraph({children:[new TextRun({text:String(text==null?'':text), bold:!!opts.header})]})]
+      width: {size: w, type: WidthType.DXA},
+      shading: header ? {fill:'D9D9D9'} : undefined,
+      margins: cellMargins,
+      children: [new Paragraph({children:[new TextRun({text:String(text==null?'':text), bold:!!header, size:17})]})]
     });
   }
-  const header = new TableRow({tableHeader:true, children: headerCells.map((h,i)=>cell(h,{header:true, width: widths?widths[i]:null}))});
-  const body = rows.map(r=> new TableRow({children: r.map((c,i)=>cell(c,{width: widths?widths[i]:null}))}));
-  return new Table({rows:[header, ...body], width:{size:100, type:WidthType.PERCENTAGE}});
+  const header = new TableRow({tableHeader:true, children: headerCells.map((h,i)=>cell(h, widthsDxa[i], true))});
+  const body = rows.map(r=> new TableRow({children: r.map((c,i)=>cell(c, widthsDxa[i], false))}));
+  const totalWidth = widthsDxa.reduce((a,b)=>a+b,0);
+  return new Table({
+    rows:[header, ...body],
+    width:{size:totalWidth, type:WidthType.DXA},
+    columnWidths: widthsDxa,
+    layout: TableLayoutType.FIXED
+  });
 }
+// Standard Letter page, narrow margins, in DXA — usable width = 12240 - 2*720 = 10800
+const PAGE_MARGINS = {top:720, bottom:720, left:720, right:720};
 function pgf(text, opts){
   const {Paragraph, TextRun} = docx;
   opts = opts||{};
@@ -1081,14 +1094,16 @@ async function buildTaBillDocx(mKey){
     pgf('NAME: '+p.name, {bold:true, after:60}),
     pgf('HQ: '+p.hq, {bold:true, after:60}),
     pgf('LEAVE: '+(m.leaveText||'-'), {bold:true, after:200}),
-    docxTable(['Dep Date','Time','Place','Arr Date','Time','Place','Mode','KMS','Fare (₹)'], rows.length?rows:[['-','-','No travel logged this month','-','-','-','-','-','-']]),
+    docxTable(['Dep Date','Time','Place','Arr Date','Time','Place','Mode','KMS','Fare (₹)'],
+      rows.length?rows:[['-','-','No travel logged this month','-','-','-','-','-','-']],
+      [1100,700,1700,1100,700,1700,800,600,800]),
     pgf('', {after:200}),
     pgf('TOTALS:', {bold:true, after:100}),
     ...totalParas,
     pgf('', {after:400}),
     pgf(p.division+'                              '+p.name+'                              '+p.designation+' '+p.division, {bold:true})
   ];
-  return new Document({sections:[{children}]});
+  return new Document({sections:[{properties:{page:{margin:PAGE_MARGINS}}, children}]});
 }
 
 async function buildDiaryDocx(mKey){
@@ -1121,22 +1136,24 @@ async function buildDiaryDocx(mKey){
   const children = [
     pgf('DIARY FOR THE MONTH OF '+monthName(mKey).toUpperCase(), {heading: HeadingLevel.HEADING_2, underline:true, after:200}),
     pgf('A. Basic Details', {bold:true, after:100}),
-    docxTable(['Field','Value'], basicRows, [40,60]),
+    docxTable(['Field','Value'], basicRows, [4300,6500]),
     pgf('', {after:200}),
     pgf('B. Targets & Achievement (During the Month)', {bold:true, after:100}),
-    docxTable(['Service / Vertical','Target Assigned','Achievement (₹)','Percentage of Achievement'], targetRows),
+    docxTable(['Service / Vertical','Target Assigned','Achievement (₹)','Percentage of Achievement'], targetRows, [3200,2500,2500,2600]),
     pgf('', {after:200}),
     pgf('C. Daily Activity Report', {bold:true, after:100}),
-    docxTable(['Date','Duration','Name & Address of Customer','Contact No','New Areas of Business Introduced','Overall Result of Visit'], visitRows.length?visitRows:[['-','-','No visits logged','-','-','-']])
+    docxTable(['Date','Duration','Name & Address of Customer','Contact No','New Areas of Business Introduced','Overall Result of Visit'],
+      visitRows.length?visitRows:[['-','-','No visits logged','-','-','-']],
+      [900,800,2600,1400,2300,1800])
   ];
   if(tasks.length){
     children.push(pgf('', {after:200}));
     children.push(pgf('D. Non-Marketing Duties (for reference)', {bold:true, after:100}));
-    children.push(docxTable(['Date','Duration','Task','Place'], taskRows));
+    children.push(docxTable(['Date','Duration','Task','Place'], taskRows, [900,800,4700,2000]));
   }
   children.push(pgf('', {after:400}));
   children.push(pgf(p.division+'                              '+p.name+'                              '+p.designation+' '+p.division, {bold:true}));
-  return new Document({sections:[{children}]});
+  return new Document({sections:[{properties:{page:{margin:PAGE_MARGINS}}, children}]});
 }
 
 async function generateAndSave(kind, mKey){
